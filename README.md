@@ -7,6 +7,11 @@
 1. 需要先把 [Lite Agent Core](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart) 的代码pull下来到本地，假设本地路径为：`/Users/jan/Project/lite_agent_core_dart`
 2. 在pubspec.yaml的lite_agent_core_dart依赖的path中，更新路径为步骤1下载的本地路径
 3. 在项目根目录运行 `dart pub get` 构建依赖
+4. 根目录增加`.env`文件，并采用如下格式填写配置：
+    ```
+    baseUrl = https://xxx.xxx.com         # 大模型接口的BaseURL
+    apiKey = sk-xxxxxxxxxxxxxxxxxxxx      # 大模型接口的ApiKey
+    ```
 
 ## 2. 运行server
 1. `debug`或者`run`模式运行`/bin/server.dart`文件的`main()`

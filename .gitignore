@@ -4,6 +4,6 @@
 .idea/
 .log/
 
-pubspec.log
+pubspec.lock
 .env
 lite_agent_core_dart_server.iml
