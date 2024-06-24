@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "server": {
+    "apiPathPrefix": "/api",
+    "port": 9527
+  },
+  "log": {
+    "level": "INFO"
+  }
+}
