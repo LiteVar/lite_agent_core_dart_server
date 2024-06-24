@@ -2,7 +2,7 @@
 # Created by `dart pub`
 .dart_tool/
 .idea/
-.log/
+log/
 
 pubspec.lock
 .env
