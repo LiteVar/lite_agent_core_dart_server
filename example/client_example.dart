@@ -179,7 +179,7 @@ void printAgentMessage(AgentMessageDto agentMessageDto) {
 
 LLMConfigDto _buildLLMConfigDto() {
   DotEnv env = DotEnv();
-  env.load();
+  env.load(['example/.env']);
   return LLMConfigDto(
       baseUrl: env["baseUrl"]!,
       apiKey: env["apiKey"]!,

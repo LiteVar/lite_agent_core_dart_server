@@ -7,8 +7,8 @@
 1. 需要先把 [Lite Agent Core](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart) 的代码pull下来到本地，假设本地路径为：`/Users/jan/Project/lite_agent_core_dart`
 2. 在pubspec.yaml的lite_agent_core_dart依赖的path中，更新路径为步骤1下载的本地路径
 3. 在项目根目录运行 `dart pub get` 构建依赖
-4. 根目录增加`.env`文件，并采用如下格式填写配置：
-    ```
+4. （可选）如果需要运行`example/client_example`，需要在`example`目录增加`.env`文件，并采用如下格式填写配置：
+    ```properties
     baseUrl = https://xxx.xxx.com         # 大模型接口的BaseURL
     apiKey = sk-xxxxxxxxxxxxxxxxxxxx      # 大模型接口的ApiKey
     ```
@@ -262,3 +262,20 @@
 [/clear请求] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
 [ws关闭] WebSocket connection closed
 ```
+
+## 7. Build构建
+1. 命令行在项目根目录运行如下命令：
+    ```shell
+    dart compile exe bin/server.dart -o build/lite_agent_core_dart_server
+    ```
+2. 在build文件夹下，有`lite_agent_core_dart_server`文件
+3. 把项目根目录的`config.json`文件复制到`lite_agent_core_dart_server`文件同一目录
+4. 命令行运行，例如：
+    ```shell
+    ./lite_agent_core_dart_server
+    ```
+5. 命令行会有如下提示，即启动成功：
+    ```
+    INFO: 2024-06-24 14:48:05.862057: PID 34567: [HTTP] Start Server - http://127.0.0.1:9527/api
+    ```
+6. 运行启动后，同级目录将会出现`log`文件夹，文件夹中有`agent.log`文件，用以记录运行过程的日志

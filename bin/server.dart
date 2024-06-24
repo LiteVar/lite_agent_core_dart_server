@@ -22,6 +22,6 @@ Future<void> startServer() async {
       .addMiddleware(logRequest())
       .addHandler(router);
 
-  HttpServer server = await serve(handler, '192.168.2.75', config.server.port);
+  HttpServer server = await serve(handler, config.server.ip, config.server.port);
   logger.log(LogModule.http, "Start Server", detail: "http://${server.address.host}:${server.port}${config.server.apiPathPrefix}");
 }

@@ -3,7 +3,8 @@
 .dart_tool/
 .idea/
 log/
+build/
 
 pubspec.lock
-.env
+example/.env
 lite_agent_core_dart_server.iml
