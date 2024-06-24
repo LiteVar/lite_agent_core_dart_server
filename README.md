@@ -4,7 +4,7 @@
 - [Lite Agent Core的Service](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart/-/blob/master/lib/src/service/service.dart)（包括DTO）基础上，增加Controller、Router等，封装成HTTP/WS API，以下为LiteAgentServer交互指令集
 
 ## 1. 使用前执行
-1. 需要先把 [Lite Agent Core](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart) 的代码pull下来到本地，假设：`/Users/jan/Project/lite_agent_core_dart`
+1. 需要先把 [Lite Agent Core](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart) 的代码pull下来到本地，假设本地路径为：`/Users/jan/Project/lite_agent_core_dart`
 2. 在pubspec.yaml的lite_agent_core_dart依赖的path中，更新路径为步骤1下载的本地路径
 3. 在项目根目录运行 `dart pub get` 构建依赖
 
