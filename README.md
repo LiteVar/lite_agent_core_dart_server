@@ -168,7 +168,7 @@
         "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
         "from": "system、user、agent、llm、tool，五选一",
         "to": "user、agent、llm、tool、client，五选一",
-        "type": "text、imageUrl、functionCallList、toolReturn，四选一",
+        "type": "text、imageUrl、functionCallList、toolReturn, contentList，五选一",
         "message": "<泛类型，需要根据type来解析>",
         "completions": {
           "tokenUsage": {
@@ -230,6 +230,31 @@
                   "body":"{\"code\":200,\"message\":\"PASS\"}"
               }
           }
+          ```
+    - contentList:
+        - 结构：
+
+          ```json
+          [
+              {
+                  "type":"text，imageUrl，二选一",
+                  "message":"String"
+              }
+          ]
+          ```
+        - 样例：
+
+          ```json
+          [
+              {
+                  "type":"text",
+                  "message":"What’s in this image?"
+              },
+            {
+                  "type":"imageUrl",
+                  "message":"https://www.xxx.com/xxx.jpg"
+              }
+          ]
           ```
 - to=Client时，message只有如下几个状态：
     - `"[TASK_START]"`：agent接收到user message，准备处理
