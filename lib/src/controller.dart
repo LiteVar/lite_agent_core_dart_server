@@ -73,7 +73,7 @@ class AgentController {
           final data = jsonDecode(payload);
           UserMessageDto userMessageDto = UserMessageDto.fromJson(data);
           logger.log(LogModule.ws, "Receive message", detail: jsonEncode(userMessageDto.toJson()));
-          agentService.startChat(sessionDto.id, userMessageDto);
+          agentService.startChat(sessionDto.id, [userMessageDto]);
         }
       },
       onDone: () {

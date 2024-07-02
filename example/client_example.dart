@@ -98,7 +98,7 @@ Future<WebSocket> connectChat(String sessionId, onReceive(AgentMessageDto)) asyn
 }
 
 Future<void> sendUserMessage(WebSocket socket, String prompt) async {
-  UserMessageDto userMessageDto = UserMessageDto(type: UserMessageType.text, message: prompt);
+  UserMessageDto userMessageDto = UserMessageDto(type: UserMessageDtoType.text, message: prompt);
   socket.add(jsonEncode(userMessageDto.toJson()));
 }
 
