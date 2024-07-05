@@ -17,13 +17,14 @@ Map<String, WebSocketChannel> webSocketSessions = {};
 
 class AgentController {
   final AgentService agentService;
-  
+
   AgentController(this.agentService);
 
   Future<Response> getVersion(Request request) async {
     logger.log(LogModule.http, "Request getVersion");
     VersionDto versionDto = VersionDto(version: config.version);
-    logger.log(LogModule.http, "Response getVersion", detail: jsonEncode(versionDto.toJson()));
+    logger.log(LogModule.http, "Response getVersion",
+        detail: jsonEncode(versionDto.toJson()));
     return Response.ok(jsonEncode(versionDto.toJson()));
   }
 
@@ -33,23 +34,27 @@ class AgentController {
 
     try {
       final CapabilityDto capabilityDto = CapabilityDto.fromJson(data);
-      logger.log(LogModule.http, "Request initChat", detail: payload, level: Level.FINEST);
+      logger.log(LogModule.http, "Request initChat",
+          detail: payload, level: Level.FINEST);
 
-      logger.log(LogModule.http, "Request initChat", detail:
-      "baseUrl: ${capabilityDto.llmConfig.baseUrl}, "
-          + "model: ${capabilityDto.llmConfig.model}, "
-          + "systemMessageLength: ${capabilityDto.systemPrompt.length},"
-          + "openSpecListLength: ${capabilityDto.openSpecList.length}"
-      );
-      SessionDto sessionDto = await agentService.initChat(capabilityDto, listen);
+      logger.log(LogModule.http, "Request initChat",
+          detail: "baseUrl: ${capabilityDto.llmConfig.baseUrl}, " +
+              "model: ${capabilityDto.llmConfig.model}, " +
+              "systemMessageLength: ${capabilityDto.systemPrompt.length}," +
+              "openSpecListLength: ${capabilityDto.openSpecList.length}");
+      SessionDto sessionDto =
+          await agentService.initChat(capabilityDto, listen);
 
-      logger.log(LogModule.http, "Response initChat", detail: jsonEncode(sessionDto.toJson()));
+      logger.log(LogModule.http, "Response initChat",
+          detail: jsonEncode(sessionDto.toJson()));
       return Response.ok(jsonEncode(sessionDto.toJson()));
     } on FormatException catch (e) {
-      logger.log(LogModule.http, "Response initChat FormatException: ${e}", detail: payload, level: Level.WARNING);
+      logger.log(LogModule.http, "Response initChat FormatException: ${e}",
+          detail: payload, level: Level.WARNING);
       return Response.badRequest(body: e);
-    }catch (e) {
-      logger.log(LogModule.http, "Response initChat Exception: ${e}", detail: payload, level: Level.WARNING);
+    } catch (e) {
+      logger.log(LogModule.http, "Response initChat Exception: ${e}",
+          detail: payload, level: Level.WARNING);
       return Response.internalServerError(body: e);
     }
   }
@@ -63,24 +68,27 @@ class AgentController {
       webSocketSessions.addAll({sessionDto.id: webSocket});
       webSocket.stream.listen((message) {
         final payload = message as String;
-        if(payload == "ping") {
-          logger.log(LogModule.ws, "Receive message", detail: payload, level: Level.FINER);
+        if (payload == "ping") {
+          logger.log(LogModule.ws, "Receive message",
+              detail: payload, level: Level.FINER);
           WebSocketChannel? webSocketChannel = webSocketSessions[sessionDto.id];
           String pong = "pong";
-          logger.log(LogModule.ws, "Send message", detail: pong, level: Level.FINER);
+          logger.log(LogModule.ws, "Send message",
+              detail: pong, level: Level.FINER);
           webSocketChannel?.sink.add(pong);
         } else {
           final data = jsonDecode(payload);
-          UserMessageDto userMessageDto = UserMessageDto.fromJson(data);
-          logger.log(LogModule.ws, "Receive message", detail: jsonEncode(userMessageDto.toJson()));
-          agentService.startChat(sessionDto.id, [userMessageDto]);
+          List<dynamic> userMessageDataList = data as List<dynamic>;
+          List<UserMessageDto> userMessageDtoList = userMessageDataList
+              .map((dynamic data) => UserMessageDto.fromJson(data))
+              .toList();
+          logger.log(LogModule.ws, "Receive message", detail: payload);
+          agentService.startChat(sessionDto.id, userMessageDtoList);
         }
-      },
-      onDone: () {
-            logger.log(LogModule.ws, "onDone", detail: jsonEncode(data));
+      }, onDone: () {
+        logger.log(LogModule.ws, "onDone", detail: jsonEncode(data));
       });
-    }
-    )(request);
+    })(request);
   }
 
   Future<Response> history(Request request) async {
@@ -89,14 +97,18 @@ class AgentController {
     try {
       final SessionDto sessionDto = SessionDto.fromJson(data);
 
-      List<AgentMessageDto> agentMessageDtoList = await agentService.getHistory(sessionDto.id);
-      logger.log(LogModule.http, "Response get history", detail: "agent message list size: ${agentMessageDtoList.length}");
+      List<AgentMessageDto> agentMessageDtoList =
+          await agentService.getHistory(sessionDto.id);
+      logger.log(LogModule.http, "Response get history",
+          detail: "agent message list size: ${agentMessageDtoList.length}");
       return Response.ok(jsonEncode(sessionDto.toJson()));
     } on FormatException catch (e) {
-      logger.log(LogModule.http, "Response history FormatException: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+      logger.log(LogModule.http, "Response history FormatException: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.badRequest(body: e);
-    }catch (e) {
-      logger.log(LogModule.http, "Response history Exception: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+    } catch (e) {
+      logger.log(LogModule.http, "Response history Exception: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.internalServerError(body: e);
     }
   }
@@ -108,13 +120,16 @@ class AgentController {
       final SessionDto sessionDto = SessionDto.fromJson(data);
 
       await agentService.stopChat(sessionDto.id);
-      logger.log(LogModule.http, "Response stopChat", detail: jsonEncode(sessionDto.toJson()));
+      logger.log(LogModule.http, "Response stopChat",
+          detail: jsonEncode(sessionDto.toJson()));
       return Response.ok(jsonEncode(sessionDto.toJson()));
     } on FormatException catch (e) {
-      logger.log(LogModule.http, "Response stopChat FormatException: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+      logger.log(LogModule.http, "Response stopChat FormatException: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.badRequest(body: e);
     } on Exception catch (e) {
-      logger.log(LogModule.http, "Response stopChat Exception: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+      logger.log(LogModule.http, "Response stopChat Exception: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.internalServerError(body: e);
     }
   }
@@ -126,31 +141,34 @@ class AgentController {
       final SessionDto sessionDto = SessionDto.fromJson(data);
 
       await agentService.clearChat(sessionDto.id);
-      logger.log(LogModule.http, "Response clearChat", detail: jsonEncode(sessionDto.toJson()));
+      logger.log(LogModule.http, "Response clearChat",
+          detail: jsonEncode(sessionDto.toJson()));
       return Response.ok(jsonEncode(sessionDto.toJson()));
     } on FormatException catch (e) {
-      logger.log(LogModule.http, "Response clearChat FormatException: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+      logger.log(LogModule.http, "Response clearChat FormatException: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.badRequest(body: e);
     } on Exception catch (e) {
-      logger.log(LogModule.http, "Response clearChat Exception: ${e}", detail: jsonEncode(data), level: Level.WARNING);
+      logger.log(LogModule.http, "Response clearChat Exception: ${e}",
+          detail: jsonEncode(data), level: Level.WARNING);
       return Response.internalServerError(body: e);
     }
   }
 
   void listen(String sessionId, AgentMessage agentMessage) {
-      WebSocketChannel? webSocketChannel = webSocketSessions[sessionId];
-      AgentMessageDto agentMessageDto = AgentMessageDto(
+    WebSocketChannel? webSocketChannel = webSocketSessions[sessionId];
+    AgentMessageDto agentMessageDto = AgentMessageDto(
         sessionId: sessionId,
         from: agentMessage.from,
         to: agentMessage.to,
         type: agentMessage.type,
         message: agentMessage.message,
-        completions: agentMessage.completions == null? null: CompletionsDto.fromModel(agentMessage.completions!),
-        createTime: agentMessage.createTime
-      );
-      logger.log(LogModule.ws, "Send message", detail: jsonEncode(agentMessageDto.toJson()));
-      webSocketChannel?.sink.add(jsonEncode(agentMessageDto.toJson()));
-    }
-
+        completions: agentMessage.completions == null
+            ? null
+            : CompletionsDto.fromModel(agentMessage.completions!),
+        createTime: agentMessage.createTime);
+    logger.log(LogModule.ws, "Send message",
+        detail: jsonEncode(agentMessageDto.toJson()));
+    webSocketChannel?.sink.add(jsonEncode(agentMessageDto.toJson()));
+  }
 }
-
