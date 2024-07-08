@@ -10,6 +10,7 @@ dependencies:
   shelf: ^1.4.0
   shelf_router: ^1.1.0
   shelf_web_socket: ^2.0.0
+  web_socket_channel: ^3.0.0
   logging: ^1.2.0
   json_annotation: ^4.9.0
   lite_agent_core_dart: ^0.1.1
@@ -20,5 +21,5 @@ dev_dependencies:
   http: ^1.1.0
   lints: ^3.0.0
   test: ^1.24.0
-  dio: ^5.4.3+1
+  dio: ^5.5.0+1
   dotenv: ^4.2.0
