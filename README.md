@@ -1,306 +1,311 @@
 
-# Dart版本Lite Agent Core的HTTP Server封装
+# LiteAgent core Dart Server
 
-- [Lite Agent Core的Service](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart/-/blob/master/lib/src/service/service.dart)（包括DTO）基础上，增加Controller、Router等，封装成HTTP/WS API，以下为LiteAgentServer交互指令集
+English · [中文](README-zh_CN.md)
 
-## 1. 使用前执行
-1. 需要先把 [Lite Agent Core](https://gitlab.litevar.com:90/litevar/jan/lite_agent_core_dart) 的代码pull下来到本地，假设本地路径为：`/Users/jan/Project/lite_agent_core_dart`
-2. 在pubspec.yaml的lite_agent_core_dart依赖的path中，更新路径为步骤1下载的本地路径
-3. 在项目根目录运行 `dart pub get` 构建依赖
-4. （可选）如果需要运行`example/client_example`，需要在`example`目录增加`.env`文件，并采用如下格式填写配置：
-    ```properties
-    baseUrl = https://xxx.xxx.com         # 大模型接口的BaseURL
-    apiKey = sk-xxxxxxxxxxxxxxxxxxxx      # 大模型接口的ApiKey
-    ```
+LLM `AI Agent` multi session HTTP/WebSocket service
 
-## 2. 运行server
-1. `debug`或者`run`模式运行`/bin/server.dart`文件的`main()`
+## Feature
 
-## 3. HTTP/WS API目录
-- [HTTP命令](#4-http命令)
-- [WebSocket交互](#5-websocket交互)
-- [典型的交互例子](#6-典型的交互例子)
+- Support  [OpenAPI](https://github.com/djbird2046/openapi_dart)/[OpenRPC](https://github.com/djbird2046/openrpc_dart)/[OpenModbus](https://github.com/djbird2046/openmodbus_dart)/[OpenTool](https://github.com/djbird2046/opentool_dart) JSON Spec.
+- Support LLM Function calling to `HTTP API`/`json-rpc 2.0 over HTTP`/`Modbus` and more custom tools.
+- HTTP Server wrapper [Lite Agent core Dart](https://github.com/LiteVar/lite_agent_core_dart) 
+- Base on [Lite Agent Core AgentService](https://github.com/LiteVar/lite_agent_core_dart/blob/master/lib/src/service/service.dart)(DTO included), add Controller、Router, wrapper to HTTP/WS API.
 
-## 4. HTTP命令
-- 用于session会话的控制指令，包括：
-    - `/version`：版本号，用于确认server在运行
-    - `/init`：初始化一个会话，server会返回一个id
-    - `/history`：返回当前会话的所有message历史
-    - `/stop`：中止会话，传入一个id，正在进行的message处理完后停止，后续的message不执行
-    - `/clear`：清空会话，传入一个id，会清空会话的上下文和关闭websocket连接
+## Usage
 
-###  BaseURL
+### 1. Prepare
+
+1. Some OpenSpec json file, according to `/example/json/open*/*.json`, which is callable.
+2. Run your tool server, which is described in json file.
+3. Add `.env` file in the `example` folder, and add below content in the `.env` file：
+     ```properties
+     baseUrl = https://xxx.xxx.com         # LLM API BaseURL
+     apiKey = sk-xxxxxxxxxxxxxxxxxxxx      # LLM API ApiKey
+     ```
+
+### 2. Develop run server
+1. `debug` or `run` mode run `/bin/server.dart` file `main()`
+
+### 3. HTTP/WS API
+- [HTTP API](#31-http-API)
+- [WebSocket API](#32-websocket-API)
+- [Typical Interaction](#33-Typical-Interaction)
+
+#### 3.1 HTTP API
+- session control command, include：
+    - `/version`：get version number, to confirm server running
+    - `/init`：initial new session, server return session id
+    - `/history`：get session messages not be cleared
+    - `/stop`：stop session, when current message done, will not run next message
+    - `/clear`：clear session context messages, and close websocket connection
+
+##### BaseURL
 - `http://127.0.0.1:9527/api`
 
-### [GET] /version
-- 版本号，无需任何入参，一般用于确认server在运行
-- 返回样例：
+##### [GET] /version
+- Feature：get version number, to confirm server running
+- Request params: empty
+- Response body sample：
 
   ```json
   {
-      "version": "0.0.1"
+      "version": "0.1.0"
   }
   ```
 
-### [POST] /init
-- 请求样例：body结构
-    - 大模型设置：大模型的链接、key、模型名称
-    - 预置提示词：角色、能力、目标描述
-    - 能力细节描述：openapi、openmodbus文档描述。其中apiKey根据实际需要可选填写
-
-  ```json
-  {
-      "llmConfig": {
-          "baseUrl": "<大模型厂商的api入口，例如：https://api.openai.com/v1>",
-          "apiKey": "<大模型厂商的api的Key>",
-          "model": "<厂商支持的大模型名称，例如：gpt-3.5-turbo，下方的temperature、maxTokens、topP可选传入，下方为默认值>",
-          "temperature": 0,
-          "maxTokens": 4096,
-          "topP": 1
-      },
-      "systemPrompt": "<预置的系统提示词，例如扮演什么角色，具有什么能力，需要帮助用户解决哪一类的问题>",
-      "openSpecList": [
-          {
-              "openSpec": "<spec的json描述文本，目前支持的类型是openapi、openmodbus、openrpc>",
-              "apiKey": {
-                  "type": "<basic或bearer二选一>",
-                  "apiKey": "<第三方服务的apiKey>"
-              },
-              "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
+##### [POST] /init
+- Feature: initial new session agent
+- Request body：
+    - LLM config: baseUrl, apiKey, model
+    - System Prompt: Agent character, ToDo/NotToDo description
+    - Tools Description: openapi、openmodbus Spec. According to third APIs in Spec to set `apiKey` or net
+    - Timeout：3600 seconds in default. When agent stopped, massages context will be clear
+    - Sample: 
+      ```json
+      {
+          "llmConfig": {
+              "baseUrl": "<LLM API baseUrl, e.g. https://api.openai.com/v1>",
+              "apiKey": "<LLM API apiKey, e.g. sk-xxxxxxxxxx>",
+              "model": "<LLM API model name, e.g. gpt-3.5-turbo. And temperature、maxTokens、topP can be changed below >",
+              "temperature": 0,
+              "maxTokens": 4096,
+              "topP": 1
           },
-          {
-              "openSpec": "<另一段spec的json描述，可以不同类型混用>",
-              "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
-          }
-      ],
-      "timeoutSeconds": 3600
-  }
-  ```
+          "systemPrompt": "<System Prompt. LLM character, capabilities, need to help user fixed what problems>",
+          "openSpecList": [
+              {
+                  "openSpec": "<tool spec json string, support openapi、openmodbus、openrpc>",
+                  "apiKey": {
+                      "type": "<basic or bearer>",
+                      "apiKey": "<Third APIs apiKey>"
+                  },
+                  "protocol": "Support openapi, openmodbus, jsonrpcHttp"
+              },
+              {
+                  "openSpec": "<Another spec json string, can be another protocol>",
+                  "protocol": "Support openapi, openmodbus, jsonrpcHttp"
+              }
+          ],
+          "timeoutSeconds": 3600
+      }
+      ```
 
-- 返回样例：
-    - 返回sessionId，用以后续对于该session的消息订阅、stop、clear操作
+- Response body：
+    - sessionId, will be used as session websocket subscribe, stop and clear operations.
+    - Sample: 
+      ```json
+      {
+          "id": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30"
+      }
+      ```
 
-  ```json
-  {
-      "id": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30"
-  }
-  ```
+##### [GET] /history?id=\<sessionId\>
 
-### [GET] /history?id=\<sessionId\>
-
-- 返回样例：
-    - 返回agent message的list
-
+- Response body:
+  - agent messages context as list
+  - Sample:
   ```json
   [
-      {
-          "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
-          "from": "system、user、agent、llm、tool，五选一",
-          "to": "user、agent、llm、tool、client，五选一",
-          "type": "text、imageUrl、functionCallList、toolReturn，四选一",
-          "message": "<泛类型，需要根据type来解析>",
-          "completions": {
-              "tokenUsage": {
-                "promptTokens": 100,
-                "completionTokens": 522,
-                "totalTokens": 622
-              },
-              "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
-              "model": "gpt-3.5-turbo"
-           },
-          "createTime": "2023-06-18T15:45:30.000+0800"
-      }
+  {
+    "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
+    "from": "system | user | agent | llm | tool",
+    "to": "user | agent | llm | tool | client",
+    "type": "text | imageUrl | functionCallList | toolReturn | contentList",
+    "message": "<need to parse according type>",
+    "completions": {
+        "tokenUsage": {
+          "promptTokens": 100,
+          "completionTokens": 522,
+          "totalTokens": 622
+        },
+        "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
+        "model": "gpt-3.5-turbo"
+     },
+    "createTime": "2023-06-18T15:45:30.000+0800"
+  }
   ]
   ```
 
+##### [GET] /stop?id=\<sessionId\>
 
-### [GET] /stop?id=\<sessionId\>
-
-- 返回样例：
-    - 返回sessionId，用以确认该操作对应的session
-
+- Response body:
+  - sessionId, to confirm the operation of the session
+  - Sample: 
   ```json
   {
       "id": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30"
   }
   ```
 
-### [GET] /clear?id=\<sessionId\>
+##### [GET] /clear?id=\<sessionId\>
 
-- 返回样例：
-    - 返回sessionId，用以确认该操作对应的session
-
+- Response body:
+  - sessionId, to confirm the operation of the session
+  - Sample: 
   ```json
   {
       "id": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30"
   }
   ```
 
-## 5. WebSocket交互
-- 用于session会话的消息发送和订阅
+#### 3.2 WebSocket API
+- Send and subscribe session AgentMessage
 
-### Endpoint
+##### Endpoint
 - `ws://127.0.0.1:9527/api/chat?id=<sessionId>`
 
-### 消息类型和交互顺序
+##### 3.2.1 alive
+- client(ping) -> server: send `"ping"` to server
+- client <- server(pong): respond `"pong"` to client
 
-#### 1. 保持连接
-- client(ping) -> server: 发送`"ping"`给server
-- client <- server(pong): 响应`"pong"`给client
-
-#### 2. client发送 用户消息 到server
-- client(UserMessage) -> server ：包装用户的消息给server
-- 样例：
-
-  ```json
+##### 3.2.2 client send UserMessageDto List to server
+- client(\[UserMessageDto\]) -> server ：Wrap and send server
+- Sample: 
+```json
+[
   {
-      "type": "text",
-      "message": "帮我启动某某设备"
+    "type": "text",
+    "message": "Get some tool status"
   }
-  ```
+]
+```
 
-#### 3. server回复 Agent消息 给client
-- client <- server(AgentMessage) ：Agent系统持续推送消息给client
-- 样例：
-
-    ```json
-    {
-        "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
-        "from": "system、user、agent、llm、tool，五选一",
-        "to": "user、agent、llm、tool、client，五选一",
-        "type": "text、imageUrl、functionCallList、toolReturn, contentList，五选一",
-        "message": "<泛类型，需要根据type来解析>",
-        "completions": {
-          "tokenUsage": {
-        	"promptTokens": 100,
-        	"completionTokens": 522,
-        	"totalTokens": 622
-          },
-          "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
-          "model": "gpt-3.5-turbo"
-        },
-        "createTime": "2023-06-18T15:45:30.000+0800"
-    }
-    ```
-- type在不同类型下的message结构
-    -  text、imageUrl：
-        -  直接就是`""`的String
-        -  样例：`"AUT测试结果为：PASS"`
+##### 3.2.3 server feedback AgentMessage to client
+- client <- server(AgentMessage) ：server will keep sending AgentMessage to client
+- Sample:
+```json
+{
+    "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
+    "from": "system | user | agent | llm | tool",
+    "to": "user | agent | llm | tool | client",
+    "type": "text | imageUrl | functionCallList | toolReturn | contentList",
+    "message": "<need to parse according type>",
+    "completions": {
+      "tokenUsage": {
+        "promptTokens": 100,
+        "completionTokens": 522,
+        "totalTokens": 622
+      },
+      "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
+      "model": "gpt-3.5-turbo"
+    },
+    "createTime": "2023-06-18T15:45:30.000+0800"
+}
+```
+- According `type` to parse `message`
+    - text、imageUrl：
+      - String
+      - Sample: `"Tool result: PASS"`
     - functionCallList：
-        - 结构：
-
-          ```json
-          [
-              {
-                  "id":"<大模型返回的funcion call的id>",
-                  "name":"<function的名称>",
-                  "parameters": "<大模型返回的参数map>"
-              }
-          ]
-          ```
-        - 样例：
-
-          ```json
-          [
-              {
-                  "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
-                  "name":"POST-AUT",
-                  "parameters": {
-                      "operation":"result"
-                  }
-              }
-          ]
-          ```
-    -  toolReturn：
-        - 结构：
-
-          ``` json
+      - Struct:
+      ```json
+      [
           {
-              "id":"<llm给出的call的id>",
-              "result": <一个map，根据不同工具的不同情况返回不一样>
+              "id":"<LLM respond id in function call>",
+              "name":"<function name>",
+              "parameters": "<LLM respond parameters in map>"
           }
-          ```
-        - 样例：
-
-          ``` json
-          {
-              "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
-              "result": {
-                  "statusCode":200,
-                  "body":"{\"code\":200,\"message\":\"PASS\"}"
-              }
+      ]
+      ```
+      - Sample:
+      ```json
+      [
+        {
+          "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
+          "name":"SomeFunction",
+          "parameters": {
+            "operation":"result"
           }
-          ```
+        }
+      ]
+      ```
+    - toolReturn：
+      - Struct: 
+      ``` json
+      {
+        "id":"<LLM respond id in function call>",
+        "result": <JSON Map, different tools in defferent result>
+      }
+      ```
+      - Sample:
+      ``` json
+      {
+        "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
+        "result": {
+          "statusCode":200,
+          "body":"{\"code\":200,\"message\":\"PASS\"}"
+        }
+      }
+      ```
     - contentList:
-        - 结构：
+      - Struct:
+      ```json
+      [
+        {
+          "type":"text | imageUrl",
+          "message":"String"
+        }
+      ]
+      ```
+      - Sample:
+      ```json
+      [
+        {
+          "type":"text",
+          "message":"What’s in this image?"
+        },
+        {
+          "type":"imageUrl",
+          "message":"https://www.xxx.com/xxx.jpg"
+        }
+      ]
+     ```
+- When to=Client, message in below status:
+    - `"[TASK_START]"`：agent receive user messages, and ready to run task
+    - `"[TOOLS_START]"`: ready to call Tools
+    - `"[TOOLS_DONE]"`: Tools return finished
+    - `"[TASK_STOP]"`：agent receive stop or clear command, stop task
+    - `"[TASK_DONE]"`：agent run task finished
 
-          ```json
-          [
-              {
-                  "type":"text，imageUrl，二选一",
-                  "message":"String"
-              }
-          ]
-          ```
-        - 样例：
-
-          ```json
-          [
-              {
-                  "type":"text",
-                  "message":"What’s in this image?"
-              },
-            {
-                  "type":"imageUrl",
-                  "message":"https://www.xxx.com/xxx.jpg"
-              }
-          ]
-          ```
-- to=Client时，message只有如下几个状态：
-    - `"[TASK_START]"`：agent接收到user message，准备处理
-    - `"[TASK_STOP]"`：agent接收到stop或者clear指令，停止任务
-    - `"[TASK_DONE]"`：agent处理完成
-    - `"[TOOLS_START]"`: 准备提交Tools执行
-    - `"[TOOLS_DONE]"`: Tools执行完毕
-
-## 6. 典型的交互例子
+#### 3.3 Typical Interaction
 
 ```
-[/init请求] {llmConfig: ..., systemPrompt:..., openSpecList: [...]}
-[/init返回] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
-[/chat建立ws连接后，发送userMessage] {type: text, message: 查询AUT测试结果}
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 👤USER -> 🤖AGENT: [text] 查询AUT测试结果
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [text] 查询AUT测试结果
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"POST-AUT","parameters":{"operation":"result"}}]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"POST-AUT","parameters":{"operation":"result"}}]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [text] AUT测试结果为FAIL。
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 👤USER: [text] AUT测试结果为FAIL。
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
-[/stop请求] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
-[/clear请求] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
-[ws关闭] WebSocket connection closed
+[/init request] {llmConfig: ..., systemPrompt:..., openSpecList: [...]}
+[/init response] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
+[After /chat connect ws, send userMessageDtoList] [{type: text, message: Get some tool status}]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 👤USER -> 🤖AGENT: [text] Get some tool status
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [text] Get some tool status
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [text] Tool status: FAIL。
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 👤USER: [text] Tool status: FAIL。
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
+[/stop request] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
+[/clear request] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
+[ws close] WebSocket connection closed
 ```
 
-## 7. Build构建
-1. 命令行在项目根目录运行如下命令：
+## Build and Run
+1. Build in shell script:
     ```shell
     dart compile exe bin/server.dart -o build/lite_agent_core_dart_server
     ```
-2. 在build文件夹下，有`lite_agent_core_dart_server`文件
-3. 把项目根目录的`config.json`文件复制到`lite_agent_core_dart_server`文件同一目录
-4. 命令行运行，例如：
+2. Then the `lite_agent_core_dart_server` file will be in `build` folder
+3. Copy `config.json` file to `lite_agent_core_dart_server` same folder
+4. Run in shell script:
     ```shell
     ./lite_agent_core_dart_server
     ```
-5. 命令行会有如下提示，即启动成功：
+5. Terminal will show:
     ```
     INFO: 2024-06-24 14:48:05.862057: PID 34567: [HTTP] Start Server - http://0.0.0.0:9527/api
     ```
-6. 运行启动后，同级目录将会出现`log`文件夹，文件夹中有`agent.log`文件，用以记录运行过程的日志
+6. After server running, will create `log` folder and `agent.log` file in the folder, to record server running logs.
