@@ -4,7 +4,7 @@ import 'controller.dart';
 final Router apiRouter = Router();
 
 void apiRoutes() {
-  apiRouter.get('/version',agentController.getVersion);
+  apiRouter.get('/version', agentController.getVersion);
   apiRouter.post('/init', agentController.initChat);
   apiRouter.get('/chat', agentController.chat);
   apiRouter.get('/history', agentController.history);

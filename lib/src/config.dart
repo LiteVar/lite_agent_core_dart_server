@@ -9,7 +9,8 @@ part 'config.g.dart';
 final Config config = initConfig();
 
 Config initConfig() {
-  String configFilePath = '${Directory.current.path}${Platform.pathSeparator}config.json';
+  String configFilePath =
+      '${Directory.current.path}${Platform.pathSeparator}config.json';
   String configJsonString = File(configFilePath).readAsStringSync();
   final Map<String, dynamic> configJson = jsonDecode(configJsonString);
   final Config config = Config.fromJson(configJson);
@@ -33,7 +34,8 @@ class Server {
   late String apiPathPrefix;
   late int port;
 
-  Server({this.ip = "127.0.0.1", this.apiPathPrefix = "/api", this.port = 9527});
+  Server(
+      {this.ip = "127.0.0.1", this.apiPathPrefix = "/api", this.port = 9527});
 
   factory Server.fromJson(Map<String, dynamic> json) => _$ServerFromJson(json);
 }
@@ -49,20 +51,29 @@ class Log {
   }
 
   static Level _convertToLevel(String level) {
-    switch(level){
-      case "ALL": return Level.ALL;
-      case "FINEST": return Level.FINEST;
-      case "FINER": return Level.FINER;
-      case "FINE": return Level.FINE;
-      case "CONFIG": return Level.CONFIG;
-      case "INFO": return Level.INFO;
-      case "WARNING": return Level.WARNING;
-      case "SEVERE": return Level.SEVERE;
-      case "SHOUT": return Level.SHOUT;
-      case "OFF": return Level.OFF;
-      default: return Level.INFO;
+    switch (level) {
+      case "ALL":
+        return Level.ALL;
+      case "FINEST":
+        return Level.FINEST;
+      case "FINER":
+        return Level.FINER;
+      case "FINE":
+        return Level.FINE;
+      case "CONFIG":
+        return Level.CONFIG;
+      case "INFO":
+        return Level.INFO;
+      case "WARNING":
+        return Level.WARNING;
+      case "SEVERE":
+        return Level.SEVERE;
+      case "SHOUT":
+        return Level.SHOUT;
+      case "OFF":
+        return Level.OFF;
+      default:
+        return Level.INFO;
     }
   }
-
 }
-
