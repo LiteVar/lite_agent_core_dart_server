@@ -7,7 +7,7 @@ import 'package:dotenv/dotenv.dart';
 
 import '../lib/src/config.dart';
 
-String prompt = "查询AUT测试结果";
+String prompt = "Get some tool status.";
 
 Config config = initConfig();
 
