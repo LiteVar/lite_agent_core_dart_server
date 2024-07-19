@@ -78,12 +78,9 @@ class AgentController {
           webSocketChannel?.sink.add(pong);
         } else {
           final data = jsonDecode(payload);
-          List<dynamic> userMessageDataList = data as List<dynamic>;
-          List<UserMessageDto> userMessageDtoList = userMessageDataList
-              .map((dynamic data) => UserMessageDto.fromJson(data))
-              .toList();
+          UserTaskDto userTaskDto = UserTaskDto.fromJson(data);
           logger.log(LogModule.ws, "Receive message", detail: payload);
-          agentService.startChat(sessionDto.id, userMessageDtoList);
+          agentService.startChat(sessionDto.id, userTaskDto);
         }
       }, onDone: () {
         logger.log(LogModule.ws, "onDone", detail: jsonEncode(data));
@@ -117,12 +114,12 @@ class AgentController {
     final data = await request.url.queryParameters;
     logger.log(LogModule.http, "Request stopChat", detail: jsonEncode(data));
     try {
-      final SessionDto sessionDto = SessionDto.fromJson(data);
+      final SessionTaskDto sessionTaskDto = SessionTaskDto.fromJson(data);
 
-      await agentService.stopChat(sessionDto.id);
+      await agentService.stopChat(sessionTaskDto);
       logger.log(LogModule.http, "Response stopChat",
-          detail: jsonEncode(sessionDto.toJson()));
-      return Response.ok(jsonEncode(sessionDto.toJson()));
+          detail: jsonEncode(sessionTaskDto.toJson()));
+      return Response.ok(jsonEncode(sessionTaskDto.toJson()));
     } on FormatException catch (e) {
       logger.log(LogModule.http, "Response stopChat FormatException: ${e}",
           detail: jsonEncode(data), level: Level.WARNING);
@@ -157,16 +154,7 @@ class AgentController {
 
   void listen(String sessionId, AgentMessage agentMessage) {
     WebSocketChannel? webSocketChannel = webSocketSessions[sessionId];
-    AgentMessageDto agentMessageDto = AgentMessageDto(
-        sessionId: sessionId,
-        from: agentMessage.from,
-        to: agentMessage.to,
-        type: agentMessage.type,
-        message: agentMessage.message,
-        completions: agentMessage.completions == null
-            ? null
-            : CompletionsDto.fromModel(agentMessage.completions!),
-        createTime: agentMessage.createTime);
+    AgentMessageDto agentMessageDto = AgentMessageDto.fromModel(sessionId, agentMessage);
     logger.log(LogModule.ws, "Send message",
         detail: jsonEncode(agentMessageDto.toJson()));
     webSocketChannel?.sink.add(jsonEncode(agentMessageDto.toJson()));

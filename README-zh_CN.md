@@ -1,4 +1,3 @@
-
 # LiteAgent core Dart Server 
 
 [English](README.md) · 中文
@@ -209,17 +208,17 @@
     ]
     ```
     - 样例：
-      ```json
-      [
-        {
-          "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
-          "name":"SomeFunction",
-          "parameters": {
-            "operation":"result"
-          }
+    ```json
+    [
+      {
+        "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
+        "name":"SomeFunction",
+        "parameters": {
+          "operation":"result"
         }
-      ]
-      ```
+      }
+    ]
+    ```
   - toolReturn：
     - 结构：
     ``` json
@@ -231,34 +230,34 @@
     - 样例：
     ``` json
     {
-        "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
-        "result": {
-            "statusCode":200,
-            "body":"{\"code\":200,\"message\":\"PASS\"}"
-        }
+      "id":"call_z5FK2dAfU8TXzn61IJXzRl5I",
+      "result": {
+        "statusCode":200,
+        "body":"{\"code\":200,\"message\":\"PASS\"}"
+      }
     }
     ```
   - contentList:
     - 结构：
     ```json
     [
-        {
-            "type":"text、imageUrl，二选一",
-            "message":"String"
-        }
+      {
+         "type":"text、imageUrl，二选一",
+         "message":"String"
+      }
     ]
     ```
     - 样例：
     ```json
     [
-        {
-            "type":"text",
-            "message":"What’s in this image?"
-        },
       {
-            "type":"imageUrl",
-            "message":"https://www.xxx.com/xxx.jpg"
-        }
+        "type":"text",
+        "message":"What’s in this image?"
+      },
+      {
+        "type":"imageUrl",
+        "message":"https://www.xxx.com/xxx.jpg"
+      }
     ]
     ```
 - to=Client时，message有如下几个状态：
