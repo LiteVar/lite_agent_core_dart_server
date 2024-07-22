@@ -159,15 +159,18 @@
 - client <- server(pong): 响应`"pong"`给client
 
 ##### 3.2.2 client发送 用户消息数组 到server
-- client(\[UserMessageDto\]) -> server ：包装用户的消息给server
+- client(UserTaskDto) -> server ：包装用户的消息给server
 - 样例：
 ```json
-[
-  {
-    "type": "text",
-    "message": "帮我运行某某功能"
-  }
-]
+{
+  "taskId": "可选，用于识别AgentMessage来自于哪个任务，若不设置，则系统自行生成",
+  "contentList": [
+    {
+      "type": "text",
+      "message": "帮我运行某某功能"
+    }
+  ]
+}
 ```
 
 ##### 3.2.3 server回复 Agent消息 给client
@@ -175,21 +178,22 @@
 - 样例：
 ```json
 {
-    "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
-    "from": "system、user、agent、llm、tool，五选一",
-    "to": "user、agent、llm、tool、client，五选一",
-    "type": "text、imageUrl、functionCallList、toolReturn, contentList，五选一",
-    "message": "<泛类型，需要根据type来解析>",
-    "completions": {
-      "tokenUsage": {
-        "promptTokens": 100,
-        "completionTokens": 522,
-        "totalTokens": 622
-      },
-      "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
-      "model": "gpt-3.5-turbo"
+  "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
+  "taskId": "0b127f1d-4667-4a52-bbcb-0b636f9a471a",
+  "from": "system、user、agent、llm、tool，五选一",
+  "to": "user、agent、llm、tool、client，五选一",
+  "type": "text、imageUrl、functionCallList、toolReturn, contentList，五选一",
+  "message": "<泛类型，需要根据type来解析>",
+  "completions": {
+    "tokenUsage": {
+      "promptTokens": 100,
+      "completionTokens": 522,
+      "totalTokens": 622
     },
-    "createTime": "2023-06-18T15:45:30.000+0800"
+    "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
+    "model": "gpt-3.5-turbo"
+  },
+  "createTime": "2023-06-18T15:45:30.000+0800"
 }
 ```
 - `type`在不同类型下的`message`结构
@@ -271,22 +275,22 @@
 
 ```
 [/init请求] {llmConfig: ..., systemPrompt:..., openSpecList: [...]}
-[/init返回] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
-[/chat建立ws连接后，发送userMessage] [{type: text, message: 查询某功能运行结果}]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 👤USER -> 🤖AGENT: [text] 查询某功能运行结果
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [text] 查询某功能运行结果
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [text] 功能运行结果为FAIL。
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 👤USER: [text] 功能运行结果为FAIL。
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
-[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
+[/init返回SessionId] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a}
+[/chat建立ws连接后，发送userMessage] {taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a, contentList: [{type: text, message: 查询某功能运行结果}]}
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 👤USER -> 🤖AGENT: [text] 查询某功能运行结果
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 💡LLM: [text] 查询某功能运行结果
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 💡LLM -> 🤖AGENT: [text] 功能运行结果为FAIL。
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 👤USER: [text] 功能运行结果为FAIL。
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
+[ws推送] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
 [/stop请求] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
 [/clear请求] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
 [ws关闭] WebSocket connection closed

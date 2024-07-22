@@ -170,27 +170,39 @@ LLM `AI Agent` multi session HTTP/WebSocket service
   }
 ]
 ```
+```json
+{
+  "taskId": "Optional. For identify which task AgentMessage from. If NULL, server will create one.",
+  "contentList": [
+    {
+      "type": "text",
+      "message": "Get some tool status"
+    }
+  ]
+}
+```
 
 ##### 3.2.3 server feedback AgentMessage to client
 - client <- server(AgentMessage) ：server will keep sending AgentMessage to client
 - Sample:
 ```json
 {
-    "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
-    "from": "system | user | agent | llm | tool",
-    "to": "user | agent | llm | tool | client",
-    "type": "text | imageUrl | functionCallList | toolReturn | contentList",
-    "message": "<need to parse according type>",
-    "completions": {
-      "tokenUsage": {
-        "promptTokens": 100,
-        "completionTokens": 522,
-        "totalTokens": 622
-      },
-      "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
-      "model": "gpt-3.5-turbo"
+  "sessionId": "b2ac9280-70d6-4651-bd3a-45eb81cd8c30",
+  "taskId": "0b127f1d-4667-4a52-bbcb-0b636f9a471a",
+  "from": "system | user | agent | llm | tool",
+  "to": "user | agent | llm | tool | client",
+  "type": "text | imageUrl | functionCallList | toolReturn | contentList",
+  "message": "<need to parse according type>",
+  "completions": {
+    "tokenUsage": {
+      "promptTokens": 100,
+      "completionTokens": 522,
+      "totalTokens": 622
     },
-    "createTime": "2023-06-18T15:45:30.000+0800"
+    "id": "chatcmpl-9bgYkOjpdtLV0o0JugSmnNzGrRFMG",
+    "model": "gpt-3.5-turbo"
+  },
+  "createTime": "2023-06-18T15:45:30.000+0800"
 }
 ```
 - According `type` to parse `message`
@@ -272,22 +284,22 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 
 ```
 [/init request] {llmConfig: ..., systemPrompt:..., openSpecList: [...]}
-[/init response] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
-[After /chat connect ws, send userMessageDtoList] [{type: text, message: Get some tool status}]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 👤USER -> 🤖AGENT: [text] Get some tool status
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [text] Get some tool status
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 💡LLM -> 🤖AGENT: [text] Tool status: FAIL。
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 👤USER: [text] Tool status: FAIL。
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
-[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
+[/init response SessionId] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a}
+[After /chat connect ws, send userTaskDto] {taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a, contentList: [{type: text, message: Get some tool status}]}
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_START]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 👤USER -> 🤖AGENT: [text] Get some tool status
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 💡LLM: [text] Get some tool status
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 💡LLM -> 🤖AGENT: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔧TOOL: [functionCallList] [{"id":"call_73xLVZDe70QgLHsURgY5BNT0","name":"SomeFunction","parameters":{"operation":"result"}}]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_START]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🔧TOOL -> 🤖AGENT: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 💡LLM: [toolReturn] {"id":"call_73xLVZDe70QgLHsURgY5BNT0","result":{"statusCode":200,"body":"{\"code\":200,\"message\":\"FAIL\"}"}}
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🔧TOOL -> 🤖AGENT: [text] [TOOLS_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TOOLS_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 💡LLM -> 🤖AGENT: [text] Tool status: FAIL.
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 👤USER: [text] Tool status: FAIL.
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_DONE]
+[ws push] id: eccdacc8-a1a8-463f-b0af-7aebc278c842, taskId: 0b127f1d-4667-4a52-bbcb-0b636f9a471a# 🤖AGENT -> 🔗CLIENT: [text] [TASK_STOP]
 [/stop request] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
 [/clear request] {id: eccdacc8-a1a8-463f-b0af-7aebc278c842}
 [ws close] WebSocket connection closed
