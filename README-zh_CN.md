@@ -33,11 +33,11 @@
 
 #### 3.1 HTTP命令
 - 用于session会话的控制指令，包括：
-    - `/version`：版本号，用于确认server在运行
-    - `/init`：初始化一个会话，server会返回一个id
-    - `/history`：返回当前会话的所有message历史
-    - `/stop`：中止会话，传入一个id，正在进行的message处理完后停止，后续的message不执行
-    - `/clear`：清空会话，传入一个id，会清空会话的上下文和关闭websocket连接
+  - [/version](#get-version)：版本号，用于确认server在运行
+  - [/init](#post-init)：初始化一个会话，server会返回一个id
+  - [/history](#get-historyidsessionid)：返回当前会话的所有message历史
+  - [/stop](#get-stopidsessionid)：中止会话，传入一个id，正在进行的message处理完后停止，后续的message不执行
+  - [/clear](#get-clearidsessionid)：清空会话，传入一个id，会清空会话的上下文和关闭websocket连接
 
 ##### BaseURL
 - `http://127.0.0.1:9527/api`

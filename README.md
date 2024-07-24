@@ -34,11 +34,11 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 
 #### 3.1 HTTP API
 - session control command, include：
-    - `/version`：get version number, to confirm server running
-    - `/init`：initial new session, server return session id
-    - `/history`：get session messages not be cleared
-    - `/stop`：stop session, when current message done, will not run next message
-    - `/clear`：clear session context messages, and close websocket connection
+  - [/version](#get-version)：get version number, to confirm server running
+  - [/init](#post-init): initial new session, server return session id
+  - [/history](#get-historyidsessionid): get session messages not be cleared
+  - [/stop](#get-stopidsessionid): stop session, when current message done, will not run next message
+  - [/clear](#get-clearidsessionid): clear session context messages, and close websocket connection
 
 ##### BaseURL
 - `http://127.0.0.1:9527/api`
@@ -47,7 +47,6 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 - Feature：get version number, to confirm server running
 - Request params: empty
 - Response body sample：
-
   ```json
   {
       "version": "0.1.0"
