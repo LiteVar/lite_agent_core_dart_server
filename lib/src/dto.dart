@@ -13,3 +13,16 @@ class VersionDto {
 
   Map<String, dynamic> toJson() => _$VersionDtoToJson(this);
 }
+
+// @JsonSerializable(createFactory: false)
+// class ExceptionMessageDto implements Exception {
+//   final int code;
+//   final String message;
+//
+//   ExceptionMessageDto({
+//     required this.code,
+//     required this.message,
+//   });
+//
+//   Map<String, dynamic> toJson() => _$ExceptionMessageDtoToJson(this);
+// }

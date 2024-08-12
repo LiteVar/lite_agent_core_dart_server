@@ -5,13 +5,13 @@ import 'package:lite_agent_core_dart/lite_agent_core.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:lite_agent_core_dart_server/src/config.dart';
 
-String prompt = "Get some tool status.";
+String prompt = "List count of the storage";
 
 Config config = initConfig();
 
 Dio dio = Dio(BaseOptions(
   baseUrl:
-      "http://127.0.0.1:${config.server.port}${config.server.apiPathPrefix}",
+  "http://127.0.0.1:${config.server.port}${config.server.apiPathPrefix}",
   // headers: {"Authorization": "Bearer <KEY>"}
 ));
 
@@ -28,8 +28,7 @@ Future<void> main() async {
 
   if (sessionDto != null) {
     print("[sessionDto] " + sessionDto.toJson().toString());
-    WebSocket webSocket = await connectChat(
-        sessionDto.id, (agentMessageDto) => printAgentMessage(agentMessageDto));
+    WebSocket webSocket = await connectChat(sessionDto.id, (agentMessageDto) => printAgentMessage(agentMessageDto));
 
     print("[webSocket] " + webSocket.toString());
 
@@ -85,7 +84,7 @@ Future<WebSocket> connectChat(
   );
 
   socket.listen(
-    (message) {
+        (message) {
       final payload = message as String;
       if (payload != "pong") {
         final data = jsonDecode(payload);
@@ -108,9 +107,9 @@ Future<WebSocket> connectChat(
 }
 
 Future<void> sendUserMessage(WebSocket socket, String prompt) async {
-  UserMessageDto userMessageDto =
-      UserMessageDto(type: UserMessageDtoType.text, message: prompt);
-  socket.add(jsonEncode([userMessageDto.toJson()]));
+  UserMessageDto userMessageDto = UserMessageDto(type: UserMessageDtoType.text, message: prompt);
+  UserTaskDto userTaskDto = UserTaskDto(taskId: "0", contentList: [userMessageDto]);
+  socket.add(jsonEncode(userTaskDto.toJson()));
 }
 
 Future<void> sendPing(WebSocket socket) async {
@@ -120,7 +119,7 @@ Future<void> sendPing(WebSocket socket) async {
 Future<SessionDto?> stopChat(String sessionId) async {
   try {
     Response response =
-        await dio.get('/stop', queryParameters: {"id": sessionId});
+    await dio.get('/stop', queryParameters: {"id": sessionId});
     final payload = response.data as String;
     final data = jsonDecode(payload);
     SessionDto sessionDto = SessionDto.fromJson(data);
@@ -134,7 +133,7 @@ Future<SessionDto?> stopChat(String sessionId) async {
 Future<SessionDto?> clearChat(String sessionId, WebSocket socket) async {
   try {
     Response response =
-        await dio.get('/clear', queryParameters: {"id": sessionId});
+    await dio.get('/clear', queryParameters: {"id": sessionId});
     final payload = response.data as String;
     final data = jsonDecode(payload);
     SessionDto sessionDto = SessionDto.fromJson(data);
@@ -161,9 +160,9 @@ void printAgentMessage(AgentMessageDto agentMessageDto) {
     message = agentMessageDto.message as String;
   if (agentMessageDto.type == ToolMessageType.FUNCTION_CALL_LIST) {
     List<dynamic> originalFunctionCallList =
-        agentMessageDto.message as List<dynamic>;
+    agentMessageDto.message as List<dynamic>;
     List<FunctionCall> functionCallList =
-        originalFunctionCallList.map((dynamic json) {
+    originalFunctionCallList.map((dynamic json) {
       return FunctionCall.fromJson(json);
     }).toList();
     message = jsonEncode(functionCallList);
@@ -208,17 +207,13 @@ LLMConfigDto _buildLLMConfigDto() {
 /// Use Prompt engineering to design SystemPrompt
 /// https://platform.openai.com/docs/guides/prompt-engineering
 String _buildSystemPrompt() {
-  return 'You are a tools caller, who can call book system tools to help me manage my books.';
+  return 'You are a tools caller, who can call book system tools to help me manage my storage.';
 }
 
 Future<List<OpenSpecDto>> _buildOpenSpecList() async {
-  String openAPIFolder =
-      "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}json${Platform.pathSeparator}openrpc";
+  String openAPIFolder = "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}mock${Platform.pathSeparator}server";
   List<String> openAPIFileNameList = [
-    "json-rpc-book.json"
-
-    /// you can add more tool spec json file.
-    // "json-rpc-food.json"
+    "mock_openapi.json"
   ];
 
   List<OpenSpecDto> OpenSpecDtoList = [];
@@ -227,27 +222,9 @@ Future<List<OpenSpecDto>> _buildOpenSpecList() async {
     File file = File(jsonPath);
     String jsonString = await file.readAsString();
     OpenSpecDto openSpecDto =
-        OpenSpecDto(openSpec: jsonString, protocol: Protocol.jsonrpcHttp);
+    OpenSpecDto(openSpec: jsonString, protocol: Protocol.openapi);
     OpenSpecDtoList.add(openSpecDto);
   }
-
-  /// You can add your other tool spec
-  // String openModbusFolder =
-  //     "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}json${Platform.pathSeparator}openmodbus";
-  // List<String> openModbusFileNameList = [
-  //   "ascii-safe-system-example.json",
-  //   "rtu-lights-example.json",
-  //   "tcp-air-condition-example.json"
-  // ];
-  //
-  // for (String openModbusFileName in openModbusFileNameList) {
-  //   String jsonPath = "$openModbusFolder/$openModbusFileName";
-  //   File file = File(jsonPath);
-  //   String jsonString = await file.readAsString();
-  //   OpenSpecDto openSpecDto =
-  //       OpenSpecDto(openSpec: jsonString, protocol: Protocol.openmodbus);
-  //   OpenSpecDtoList.add(openSpecDto);
-  // }
 
   return OpenSpecDtoList;
 }

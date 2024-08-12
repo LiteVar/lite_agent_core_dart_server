@@ -236,7 +236,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
       ``` json
       {
         "id":"<LLM respond id in function call>",
-        "result": <JSON Map, different tools in defferent result>
+        "result": "<JSON Map, different tools in defferent result>"
       }
       ```
       - Sample:
