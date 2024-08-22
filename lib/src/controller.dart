@@ -38,7 +38,8 @@ class AgentController {
           detail: "baseUrl: ${capabilityDto.llmConfig.baseUrl}, " +
               "model: ${capabilityDto.llmConfig.model}, " +
               "systemMessageLength: ${capabilityDto.systemPrompt.length}," +
-              "openSpecListLength: ${capabilityDto.openSpecList.length}");
+              "openSpecListLength: ${capabilityDto.openSpecList==null?"null": capabilityDto.openSpecList!.length}"
+      );
 
       SessionDto sessionDto = await agentService.initChat(capabilityDto, listen);
 
