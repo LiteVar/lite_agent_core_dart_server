@@ -16,6 +16,7 @@ dependencies:
   lite_agent_core_dart: ^0.2.0
 
 dev_dependencies:
+  opentool_dart: ^0.2.0
   build_runner: ^2.4.9
   json_serializable: ^6.8.0
   http: ^1.1.0

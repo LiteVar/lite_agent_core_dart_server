@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:lite_agent_core_dart/lite_agent_core.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:lite_agent_core_dart_server/src/config.dart';
+import 'package:opentool_dart/opentool_dart.dart';
 
 String prompt = "Get some tool status.";
 

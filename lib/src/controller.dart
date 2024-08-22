@@ -96,7 +96,8 @@ class AgentController {
 
       List<AgentMessageDto> agentMessageDtoList = await agentService.getHistory(sessionDto.id);
       logger.log(LogModule.http, "Response get history", detail: "agent message list size: ${agentMessageDtoList.length}");
-      return Response.ok(jsonEncode(sessionDto.toJson()));
+      List<Map<String, dynamic>> agentMessageDtoJsonList = agentMessageDtoList.map((agentMessageDto)=>agentMessageDto.toJson()).toList();
+      return Response.ok(jsonEncode(agentMessageDtoJsonList));
     } on FormatException catch (e) {
       logger.log(LogModule.http, "Response history FormatException: ${e}", detail: jsonEncode(data), level: Level.WARNING);
       return Response.badRequest(body: e);
