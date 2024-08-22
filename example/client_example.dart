@@ -21,7 +21,8 @@ Future<void> main() async {
       llmConfig: _buildLLMConfigDto(),
       systemPrompt: _buildSystemPrompt(),
       openSpecList: await _buildOpenSpecList(),
-      timeoutSeconds: 20);
+      timeoutSeconds: 20
+  );
 
   print("[capabilityDto] " + capabilityDto.toJson().toString());
 
@@ -29,8 +30,7 @@ Future<void> main() async {
 
   if (sessionDto != null) {
     print("[sessionDto] " + sessionDto.toJson().toString());
-    WebSocket webSocket = await connectChat(
-        sessionDto.id, (agentMessageDto) => printAgentMessage(agentMessageDto));
+    WebSocket webSocket = await connectChat(sessionDto.id, (agentMessageDto) => printAgentMessage(agentMessageDto));
 
     print("[webSocket] " + webSocket.toString());
 
@@ -109,9 +109,9 @@ Future<WebSocket> connectChat(
 }
 
 Future<void> sendUserMessage(WebSocket socket, String prompt) async {
-  UserMessageDto userMessageDto =
-      UserMessageDto(type: UserMessageDtoType.text, message: prompt);
-  socket.add(jsonEncode([userMessageDto.toJson()]));
+  UserMessageDto userMessageDto = UserMessageDto(type: UserMessageDtoType.text, message: prompt);
+  UserTaskDto userTaskDto = UserTaskDto(contentList: [userMessageDto]);
+  socket.add(jsonEncode([userTaskDto.toJson()]));
 }
 
 Future<void> sendPing(WebSocket socket) async {
