@@ -7,6 +7,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 
 ## Feature
 
+- Support pure text agent without JSON Spec.
 - Support  [OpenAPI](https://github.com/djbird2046/openapi_dart)/[OpenRPC](https://github.com/djbird2046/openrpc_dart)/[OpenModbus](https://github.com/djbird2046/openmodbus_dart)/[OpenTool](https://github.com/djbird2046/opentool_dart) JSON Spec.
 - Support LLM Function calling to `HTTP API`/`json-rpc 2.0 over HTTP`/`Modbus` and more custom tools.
 - HTTP Server wrapper [Lite Agent core Dart](https://github.com/LiteVar/lite_agent_core_dart) 
@@ -74,7 +75,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
           "systemPrompt": "<System Prompt. LLM character, capabilities, need to help user fixed what problems>",
           "openSpecList": [
               {
-                  "openSpec": "<tool spec json string, support openapi、openmodbus、openrpc>",
+                  "openSpec": "<(Optional) tool spec json string, support openapi、openmodbus、openrpc>",
                   "apiKey": {
                       "type": "<basic or bearer>",
                       "apiKey": "<Third APIs apiKey>"
@@ -82,7 +83,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
                   "protocol": "Support openapi, openmodbus, jsonrpcHttp"
               },
               {
-                  "openSpec": "<Another spec json string, can be another protocol>",
+                  "openSpec": "<(Optional) Another spec json string, can be another protocol>",
                   "protocol": "Support openapi, openmodbus, jsonrpcHttp"
               }
           ],

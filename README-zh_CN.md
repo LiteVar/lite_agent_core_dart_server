@@ -6,6 +6,7 @@
 
 ## 功能
 
+- 支持纯文本的agent，无需JSON Spec
 - 支持 [OpenAPI](https://github.com/djbird2046/openapi_dart)/[OpenRPC](https://github.com/djbird2046/openrpc_dart)/[OpenModbus](https://github.com/djbird2046/openmodbus_dart)/[OpenTool](https://github.com/djbird2046/opentool_dart) 等`OpenSpec`的JSON文本描述
 - 支持 大模型的Function calling 到`HTTP API`/`json-rpc 2.0 over HTTP`/`Modbus`以及自定义工具的执行
 - [Dart版本Lite Agent core](https://github.com/LiteVar/lite_agent_core_dart)的HTTP Server封装
@@ -74,7 +75,7 @@
         "systemPrompt": "<预置的系统提示词，例如扮演什么角色，具有什么能力，需要帮助用户解决哪一类的问题>",
         "openSpecList": [
             {
-                "openSpec": "<spec的json描述文本，目前支持的类型是openapi、openmodbus、openrpc>",
+                "openSpec": "<（可选）spec的json描述文本，目前支持的类型是openapi、openmodbus、openrpc>",
                 "apiKey": {
                     "type": "<basic或bearer二选一>",
                     "apiKey": "<第三方服务的apiKey>"
@@ -82,7 +83,7 @@
                 "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
             },
             {
-                "openSpec": "<另一段spec的json描述，可以不同类型混用>",
+                "openSpec": "<（可选）另一段spec的json描述，可以不同类型混用>",
                 "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
             }
         ],
