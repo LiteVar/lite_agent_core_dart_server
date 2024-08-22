@@ -94,7 +94,11 @@ class AgentController {
     try {
       final SessionDto sessionDto = SessionDto.fromJson(data);
 
-      List<AgentMessageDto> agentMessageDtoList = await agentService.getHistory(sessionDto.id);
+      List<AgentMessageDto>? agentMessageDtoList = await agentService.getHistory(sessionDto.id);
+      if(agentMessageDtoList == null) {
+        logger.log(LogModule.http, "Response history NotFoundException: ", detail: "sessionId: ${sessionDto.id} history not found", level: Level.WARNING);
+        return Response.notFound("sessionId: ${sessionDto.id} history not found");
+      }
       logger.log(LogModule.http, "Response get history", detail: "agent message list size: ${agentMessageDtoList.length}");
       List<Map<String, dynamic>> agentMessageDtoJsonList = agentMessageDtoList.map((agentMessageDto)=>agentMessageDto.toJson()).toList();
       return Response.ok(jsonEncode(agentMessageDtoJsonList));
