@@ -321,3 +321,13 @@ LLM `AI Agent` multi session HTTP/WebSocket service
     INFO: 2024-06-24 14:48:05.862057: PID 34567: [HTTP] Start Server - http://0.0.0.0:9527/api
     ```
 6. After server running, will create `log` folder and `agent.log` file in the folder, to record server running logs.
+
+## Docker
+1. Build image, `cd`to project root directory, then run: 
+   ```shell
+    docker build -t lite_agent_core_dart_server .
+   ```
+2. Run container:
+   ```shell
+   docker run -d -p 9527:9527 lite_agent_core_dart_server
+   ```

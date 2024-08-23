@@ -313,3 +313,13 @@
     INFO: 2024-06-24 14:48:05.862057: PID 34567: [HTTP] Start Server - http://0.0.0.0:9527/api
     ```
 6. 运行启动后，同级目录将会出现`log`文件夹，文件夹中有`agent.log`文件，用以记录运行过程的日志
+
+## Docker
+1. 构建镜像，`cd`到项目根目录，并运行：
+   ```shell
+    docker build -t lite_agent_core_dart_server .
+   ```
+2. 运行容器：
+   ```shell
+   docker run -d -p 9527:9527 lite_agent_core_dart_server
+   ```

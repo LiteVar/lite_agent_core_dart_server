@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Add Dockerfile
+
 ## 0.3.0
 
 - Adapt lite_agent_core_dart 0.3.0 version
