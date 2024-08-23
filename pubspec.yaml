@@ -1,6 +1,6 @@
 name: lite_agent_core_dart_server
 description: HTTP Server using `Lite Agent core for Dart`
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/LiteVar/lite_agent_core_dart_server
 
 environment:
@@ -13,7 +13,8 @@ dependencies:
   web_socket_channel: ^3.0.0
   logging: ^1.2.0
   json_annotation: ^4.9.0
-  lite_agent_core_dart: ^0.2.0
+  lite_agent_core_dart: # ^0.2.0
+    path: /Users/jan/Project/lite_agent_core_dart
 
 dev_dependencies:
   opentool_dart: ^0.2.0

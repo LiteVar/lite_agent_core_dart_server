@@ -73,15 +73,7 @@ class AgentController {
           final data = jsonDecode(payload);
           UserTaskDto userTaskDto = UserTaskDto.fromJson(data);
           logger.log(LogModule.ws, "Receive message", detail: payload);
-          // try {
             agentService.startChat(sessionDto.id, userTaskDto);
-          // } on FormatException catch (e) {
-          //   logger.log(LogModule.ws, "Push startChat FormatException: ${e}", detail: jsonEncode(data), level: Level.WARNING);
-          //   pushException(sessionDto.id, ExceptionMessageDto(code: 500, message: e.message));
-          // } catch(e) {
-          //   logger.log(LogModule.ws, "Push startChat Exception: ${e}", detail: e.toString(), level: Level.WARNING);
-          //   pushException(sessionDto.id, ExceptionMessageDto(code: 500, message: e.toString()));
-          // }
         }
       }, onDone: () {
         logger.log(LogModule.ws, "onDone", detail: jsonEncode(data));

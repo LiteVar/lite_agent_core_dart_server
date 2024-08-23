@@ -50,7 +50,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 - Response body sample：
   ```json
   {
-      "version": "0.1.0"
+      "version": "0.3.0"
   }
   ```
 
