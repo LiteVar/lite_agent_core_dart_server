@@ -7,7 +7,7 @@
 ## 功能
 
 - 支持纯文本的agent，无需JSON Spec
-- 支持 [OpenAPI](https://github.com/djbird2046/openapi_dart)/[OpenRPC](https://github.com/djbird2046/openrpc_dart)/[OpenModbus](https://github.com/djbird2046/openmodbus_dart)/[OpenTool](https://github.com/djbird2046/opentool_dart) 等`OpenSpec`的JSON文本描述
+- 支持 [OpenAPI](https://github.com/djbird2046/openapi_dart)/[OpenRPC](https://github.com/djbird2046/openrpc_dart)/[OpenModbus](https://github.com/LiteVar/openmodbus_dart)/[OpenTool](https://github.com/LiteVar/opentool_dart) 等`OpenSpec`的JSON文本描述
 - 支持 大模型的Function calling 到`HTTP API`/`json-rpc 2.0 over HTTP`/`Modbus`以及自定义工具的执行
 - [Dart版本Lite Agent core](https://github.com/LiteVar/lite_agent_core_dart)的HTTP Server封装
 - [Lite Agent Core的AgentService](https://github.com/LiteVar/lite_agent_core_dart/blob/master/lib/src/service/service.dart)（包括DTO）基础上，增加Controller、Router等，封装成HTTP/WS API
