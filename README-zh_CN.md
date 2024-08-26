@@ -323,3 +323,7 @@
    ```shell
    docker run -d -p 9527:9527 lite_agent_core_dart_server
    ```
+   - 或挂载log文件，方便本地查看log，
+   ```shell
+   docker run -d -p 9527:9527 -v ./log:/app/log lite_agent_core_dart_server
+   ```

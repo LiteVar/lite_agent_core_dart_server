@@ -331,3 +331,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
    ```shell
    docker run -d -p 9527:9527 lite_agent_core_dart_server
    ```
+   - Or mount log folder for get log info
+   ```shell
+   docker run -d -p 9527:9527 -v ./log:/app/log lite_agent_core_dart_server
+   ```

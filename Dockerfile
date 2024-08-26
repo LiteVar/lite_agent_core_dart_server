@@ -1,4 +1,4 @@
-# Specify the Dart SDK base image version using dart:<version> (ex: dart:2.12)
+# Specify the Dart SDK base image version using dart
 FROM dart:stable AS build
 
 # Resolve app dependencies.
@@ -13,13 +13,15 @@ RUN dart pub get --offline
 RUN dart compile exe bin/server.dart -o bin/server
 
 # Build minimal serving image from AOT-compiled `/server` and required system
-FROM debian:bookworm-slim
+FROM alpine:latest
+
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
 COPY --from=build /app/config.json /app/config.json
-COPY --from=build /app/bin/server /app/bin/server
+COPY --from=build /app/bin/server /app/server
 
 # Start server.
 EXPOSE 9527
-ENTRYPOINT ["/app/bin/server"]
+ENTRYPOINT ["/app/server"]
