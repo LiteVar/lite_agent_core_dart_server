@@ -303,7 +303,7 @@
     dart compile exe bin/server.dart -o build/lite_agent_core_dart_server
     ```
 2. 在build文件夹下，有`lite_agent_core_dart_server`文件
-3. 把项目根目录的`config.json`文件复制到`lite_agent_core_dart_server`文件同一目录
+3. 把项目根目录的`config`文件夹（带有`config.json`文件）复制到`lite_agent_core_dart_server`文件同一目录
 4. 命令行运行，例如：
     ```shell
     ./lite_agent_core_dart_server
@@ -323,7 +323,7 @@
    ```shell
    docker run -d -p 9527:9527 lite_agent_core_dart_server
    ```
-   - 或挂载log文件，方便本地查看log，
+   - 或挂载config和log文件，方便本地设置config和查看log
    ```shell
-   docker run -d -p 9527:9527 -v ./log:/app/log lite_agent_core_dart_server
+   docker run -d -p 9527:9527 -v ./log:/app/log -v ./config:/app/config  lite_agent_core_dart_server
    ```

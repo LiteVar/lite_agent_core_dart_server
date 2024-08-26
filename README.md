@@ -311,7 +311,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
     dart compile exe bin/server.dart -o build/lite_agent_core_dart_server
     ```
 2. Then the `lite_agent_core_dart_server` file will be in `build` folder
-3. Copy `config.json` file to `lite_agent_core_dart_server` same folder
+3. Copy `config`(within `config.json`) folder to `lite_agent_core_dart_server` same folder
 4. Run in shell script:
     ```shell
     ./lite_agent_core_dart_server
@@ -331,7 +331,7 @@ LLM `AI Agent` multi session HTTP/WebSocket service
    ```shell
    docker run -d -p 9527:9527 lite_agent_core_dart_server
    ```
-   - Or mount log folder for get log info
+   - Or mount config and log folder to update config and get log info
    ```shell
-   docker run -d -p 9527:9527 -v ./log:/app/log lite_agent_core_dart_server
+   docker run -d -p 9527:9527 -v ./log:/app/log -v ./config:/app/config  lite_agent_core_dart_server
    ```
