@@ -16,6 +16,9 @@ RUN dart compile exe bin/server.dart -o bin/server
 FROM alpine:latest
 
 RUN apk add --no-cache libc6-compat
+RUN apk add--no-cache gcompat
+RUN apk add --no-cache ca-certificates
+RUN update-ca-certificates
 
 WORKDIR /app
 
