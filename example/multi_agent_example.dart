@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:lite_agent_core_dart/lite_agent_core.dart';
 import 'package:dotenv/dotenv.dart';
+import 'package:lite_agent_core_dart/lite_agent_core.dart';
 import 'package:lite_agent_core_dart_server/src/config.dart';
-import '../listener.dart';
-
-String prompt = "List count of the storage";
+import 'listener.dart';
 
 Config config = initConfig();
 
@@ -16,16 +14,28 @@ Dio dio = Dio(BaseOptions(
   // headers: {"Authorization": "Bearer <KEY>"}
 ));
 
+
+
 Future<void> main() async {
-  CapabilityDto capabilityDto = CapabilityDto(
-      llmConfig: _buildLLMConfigDto(),
-      systemPrompt: _buildSystemPrompt(),
-      openSpecList: await _buildOpenSpecList(),
-      timeoutSeconds: 20);
 
-  print("[capabilityDto] " + capabilityDto.toJson().toString());
+  DotEnv env = DotEnv();env.load(['example/.env']);LLMConfigDto llmConfig = LLMConfigDto(baseUrl: env["baseUrl"]!, apiKey: env["apiKey"]!, model: "gpt-4o-mini");
 
-  SessionDto? sessionDto = await initChat(capabilityDto);
+  String systemPrompt = "You play the role of a tool caller. You can help me decide which tool to call to complete the task according to my requirements. You can only call one tool at a time. \n\nYou support the following tools:\n\n 1. Translation\n 2. Add, delete, modify and query tools";
+  String prompt = "Find the text with ID 0 and translate it into Chinese.";
+
+  SessionDto? sessionDto1 = await _buildTextAgent();
+  SessionDto? sessionDto2 = await _buildToolAgent();
+
+  if(sessionDto1 == null || sessionDto2 == null) {
+    print("Init sub session failed.");
+    return;
+  }
+
+    CapabilityDto capabilityDto = CapabilityDto(llmConfig: llmConfig, systemPrompt: systemPrompt,
+        sessionList: [sessionDto1, sessionDto2]
+    );
+
+    SessionDto? sessionDto = await initChat(capabilityDto);
 
   if (sessionDto != null) {
     print("[sessionDto] " + sessionDto.toJson().toString());
@@ -36,7 +46,7 @@ Future<void> main() async {
     await sendUserMessage(webSocket, prompt);
     print("[prompt] " + prompt);
 
-    await sleep(10);
+    await sleep(30);
 
     await sendPing(webSocket);
     print("[ping]");
@@ -51,6 +61,39 @@ Future<void> main() async {
     SessionDto? clearSessionDto = await clearChat(sessionDto.id, webSocket);
     print("[clearSessionDto] " + clearSessionDto!.toJson().toString());
   }
+}
+
+Future<SessionDto?> _buildTextAgent() async {
+  DotEnv env = DotEnv();env.load(['example/.env']);LLMConfigDto llmConfig = LLMConfigDto(baseUrl: env["baseUrl"]!, apiKey: env["apiKey"]!, model: "gpt-4o-mini");
+
+  String systemPrompt = "Playing as a translator, knowing how to translate between languages.";
+
+  CapabilityDto capabilityDto = CapabilityDto(llmConfig: llmConfig, systemPrompt: systemPrompt);
+  return await initChat(capabilityDto);
+}
+
+Future<SessionDto?> _buildToolAgent() async {
+  DotEnv env = DotEnv();env.load(['example/.env']);LLMConfigDto llmConfig = LLMConfigDto(baseUrl: env["baseUrl"]!, apiKey: env["apiKey"]!, model: "gpt-4o-mini");
+
+  String openAPIFolder = "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}mock${Platform.pathSeparator}server";
+  List<String> openAPIFileNameList = [
+    "mock_openapi.json"
+  ];
+
+  List<OpenSpecDto> openSpecDtoList = [];
+  for (String openAPIFileName in openAPIFileNameList) {
+    String jsonPath = "$openAPIFolder${Platform.pathSeparator}$openAPIFileName";
+    File file = File(jsonPath);
+    String jsonString = await file.readAsString();
+    OpenSpecDto openSpecDto = OpenSpecDto(openSpec: jsonString, protocol: Protocol.OPENAPI);
+    openSpecDtoList.add(openSpecDto);
+  }
+
+  String systemPrompt = "A storage management tool that knows how to add, delete, modify, and query my texts.";
+
+  CapabilityDto capabilityDto = CapabilityDto(llmConfig: llmConfig, systemPrompt: systemPrompt, openSpecList: openSpecDtoList);
+
+  return await initChat(capabilityDto);
 }
 
 Future<void> sleep(int seconds) async {
@@ -75,7 +118,7 @@ Future<SessionDto?> initChat(CapabilityDto capabilityDto) async {
 }
 
 Future<WebSocket> connectChat(
-  String sessionId, onReceive(AgentMessageDto)) async {
+    String sessionId, onReceive(AgentMessageDto)) async {
   final String url = 'ws://127.0.0.1:${config.server.port}${config.server.apiPathPrefix}/chat?id=$sessionId';
 
   final WebSocket socket = await WebSocket.connect(
@@ -83,8 +126,7 @@ Future<WebSocket> connectChat(
     // headers: {"Authorization": "Bearer <KEY>"}
   );
 
-  socket.listen(
-        (message) {
+  socket.listen((message) {
       final payload = message as String;
       if (payload != "pong") {
         final data = jsonDecode(payload);
@@ -143,36 +185,4 @@ Future<SessionDto?> clearChat(String sessionId, WebSocket socket) async {
     print(e);
   }
   return null;
-}
-
-LLMConfigDto _buildLLMConfigDto() {
-  DotEnv env = DotEnv();
-  env.load(['example/.env']);
-  return LLMConfigDto(
-      baseUrl: env["baseUrl"]!, apiKey: env["apiKey"]!, model: "gpt-3.5-turbo");
-}
-
-/// Use Prompt engineering to design SystemPrompt
-/// https://platform.openai.com/docs/guides/prompt-engineering
-String _buildSystemPrompt() {
-  return 'You are a tools caller, who can call book system tools to help me manage my storage.';
-}
-
-Future<List<OpenSpecDto>> _buildOpenSpecList() async {
-  String openAPIFolder = "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}mock${Platform.pathSeparator}server";
-  List<String> openAPIFileNameList = [
-    "mock_openapi.json"
-  ];
-
-  List<OpenSpecDto> openSpecDtoList = [];
-  for (String openAPIFileName in openAPIFileNameList) {
-    String jsonPath = "$openAPIFolder${Platform.pathSeparator}$openAPIFileName";
-    File file = File(jsonPath);
-    String jsonString = await file.readAsString();
-    OpenSpecDto openSpecDto =
-    OpenSpecDto(openSpec: jsonString, protocol: Protocol.OPENAPI);
-    openSpecDtoList.add(openSpecDto);
-  }
-
-  return openSpecDtoList;
 }

@@ -4,9 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:lite_agent_core_dart/lite_agent_core.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:lite_agent_core_dart_server/src/config.dart';
-import 'package:opentool_dart/opentool_dart.dart';
 
-String prompt = "Get some tool status.";
+import 'listener.dart';
+
+String prompt = "Find the text with ID 0.";
 
 Config config = initConfig();
 
@@ -16,6 +17,11 @@ Dio dio = Dio(BaseOptions(
   // headers: {"Authorization": "Bearer <KEY>"}
 ));
 
+
+/// [IMPORTANT] Prepare:
+/// 1. HTTP Server, according to `/example/mock/server/mock_http_server`, which server is running.
+/// 2. OneAPI JSON file, which is described the HTTP Server API.
+/// 3. Add LLM baseUrl and apiKey to `.env` file
 Future<void> main() async {
   CapabilityDto capabilityDto = CapabilityDto(
       llmConfig: _buildLLMConfigDto(),
@@ -30,14 +36,14 @@ Future<void> main() async {
 
   if (sessionDto != null) {
     print("[sessionDto] " + sessionDto.toJson().toString());
-    WebSocket webSocket = await connectChat(sessionDto.id, (agentMessageDto) => printAgentMessage(agentMessageDto));
+    WebSocket webSocket = await connectChat(sessionDto.id, (agentMessageDto) => listen(agentMessageDto));
 
     print("[webSocket] " + webSocket.toString());
 
     await sendUserMessage(webSocket, prompt);
     print("[prompt] " + prompt);
 
-    await sleep(10);
+    await sleep(20);
 
     await sendPing(webSocket);
     print("[ping]");
@@ -77,8 +83,7 @@ Future<SessionDto?> initChat(CapabilityDto capabilityDto) async {
 
 Future<WebSocket> connectChat(
     String sessionId, onReceive(AgentMessageDto)) async {
-  final String url =
-      'ws://127.0.0.1:${config.server.port}${config.server.apiPathPrefix}/chat?id=$sessionId';
+  final String url = 'ws://127.0.0.1:${config.server.port}${config.server.apiPathPrefix}/chat?id=$sessionId';
 
   final WebSocket socket = await WebSocket.connect(
     url,
@@ -111,7 +116,7 @@ Future<WebSocket> connectChat(
 Future<void> sendUserMessage(WebSocket socket, String prompt) async {
   UserMessageDto userMessageDto = UserMessageDto(type: UserMessageDtoType.text, message: prompt);
   UserTaskDto userTaskDto = UserTaskDto(contentList: [userMessageDto]);
-  socket.add(jsonEncode([userTaskDto.toJson()]));
+  socket.add(jsonEncode(userTaskDto.toJson()));
 }
 
 Future<void> sendPing(WebSocket socket) async {
@@ -147,58 +152,6 @@ Future<SessionDto?> clearChat(String sessionId, WebSocket socket) async {
   return null;
 }
 
-void printAgentMessage(AgentMessageDto agentMessageDto) {
-  String system = "🖥SYSTEM";
-  String user = "👤USER";
-  String agent = "🤖AGENT";
-  String llm = "💡LLM";
-  String tool = "🔧TOOL";
-  String client = "🔗CLIENT";
-
-  String message = "";
-  if (agentMessageDto.type == ToolMessageType.TEXT)
-    message = agentMessageDto.message as String;
-  if (agentMessageDto.type == ToolMessageType.IMAGE_URL)
-    message = agentMessageDto.message as String;
-  if (agentMessageDto.type == ToolMessageType.FUNCTION_CALL_LIST) {
-    List<dynamic> originalFunctionCallList =
-        agentMessageDto.message as List<dynamic>;
-    List<FunctionCall> functionCallList =
-        originalFunctionCallList.map((dynamic json) {
-      return FunctionCall.fromJson(json);
-    }).toList();
-    message = jsonEncode(functionCallList);
-  }
-  if (agentMessageDto.type == ToolMessageType.TOOL_RETURN) {
-    message = jsonEncode(ToolReturn.fromJson(agentMessageDto.message));
-  }
-  ;
-
-  String from = "";
-  if (agentMessageDto.from == ToolRoleType.SYSTEM) {
-    from = system;
-    message = "\n$message";
-  }
-  if (agentMessageDto.from == ToolRoleType.USER) from = user;
-  if (agentMessageDto.from == ToolRoleType.AGENT) from = agent;
-  if (agentMessageDto.from == ToolRoleType.LLM) from = llm;
-  if (agentMessageDto.from == ToolRoleType.TOOL) from = tool;
-  if (agentMessageDto.from == ToolRoleType.CLIENT) from = client;
-
-  String to = "";
-  if (agentMessageDto.to == ToolRoleType.SYSTEM) to = system;
-  if (agentMessageDto.to == ToolRoleType.USER) to = user;
-  if (agentMessageDto.to == ToolRoleType.AGENT) to = agent;
-  if (agentMessageDto.to == ToolRoleType.LLM) to = llm;
-  if (agentMessageDto.to == ToolRoleType.TOOL) to = tool;
-  if (agentMessageDto.to == ToolRoleType.CLIENT) to = client;
-
-  if (from.isNotEmpty && to.isNotEmpty) {
-    print(
-        "#${agentMessageDto.sessionId}# $from -> $to: [${agentMessageDto.type}] $message");
-  }
-}
-
 LLMConfigDto _buildLLMConfigDto() {
   DotEnv env = DotEnv();
   env.load(['example/.env']);
@@ -209,17 +162,14 @@ LLMConfigDto _buildLLMConfigDto() {
 /// Use Prompt engineering to design SystemPrompt
 /// https://platform.openai.com/docs/guides/prompt-engineering
 String _buildSystemPrompt() {
-  return 'You are a tools caller, who can call book system tools to help me manage my books.';
+  return 'A storage management tool that knows how to add, delete, modify, and query my texts.';
 }
 
 Future<List<OpenSpecDto>> _buildOpenSpecList() async {
-  String openAPIFolder =
-      "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}json${Platform.pathSeparator}openrpc";
+  String openAPIFolder = "${Directory.current.path}${Platform.pathSeparator}example${Platform.pathSeparator}mock${Platform.pathSeparator}server";
   List<String> openAPIFileNameList = [
-    "json-rpc-book.json"
-
+    "mock_openapi.json"
     /// you can add more tool spec json file.
-    // "json-rpc-food.json"
   ];
 
   List<OpenSpecDto> OpenSpecDtoList = [];
@@ -227,7 +177,7 @@ Future<List<OpenSpecDto>> _buildOpenSpecList() async {
     String jsonPath = "$openAPIFolder${Platform.pathSeparator}$openAPIFileName";
     File file = File(jsonPath);
     String jsonString = await file.readAsString();
-    OpenSpecDto openSpecDto = OpenSpecDto(openSpec: jsonString, protocol: Protocol.JSONRPCHTTP);
+    OpenSpecDto openSpecDto = OpenSpecDto(openSpec: jsonString, protocol: Protocol.OPENAPI);
     OpenSpecDtoList.add(openSpecDto);
   }
 

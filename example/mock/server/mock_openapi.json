@@ -40,17 +40,15 @@
     "/create": {
       "post": {
         "summary": "Add a new text to storage",
-        "parameters": [
-          {
-            "name": "text",
-            "in": "path",
-            "required": true,
-            "description": "Text should be added",
-            "schema": {
-              "$ref": "#/components/schemas/Text"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Text"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Add successfully",
@@ -68,17 +66,15 @@
     "/read": {
       "post": {
         "summary": "Read text by Id",
-        "parameters": [
-          {
-            "name": "Id",
-            "in": "path",
-            "required": true,
-            "description": "Read text in storage by Id",
-            "schema": {
-              "$ref": "#/components/schemas/Id"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Id"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Text in storage",
@@ -96,17 +92,15 @@
     "/update": {
       "post": {
         "summary": "Update text in storage by Id",
-        "parameters": [
-          {
-            "name": "update",
-            "in": "path",
-            "required": true,
-            "description": "The update info include text and Id",
-            "schema": {
-              "$ref": "#/components/schemas/Update"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Update"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Update result",
@@ -124,17 +118,15 @@
     "/delete": {
       "post": {
         "summary": "Delete text in storage by Id",
-        "parameters": [
-          {
-            "name": "Id",
-            "in": "path",
-            "required": true,
-            "description": "The Id of the text be deleted",
-            "schema": {
-              "$ref": "#/components/schemas/Id"
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Id"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Delete result",
@@ -166,6 +158,7 @@
       },
       "Id": {
         "type": "object",
+        "description": "Text in storage by Id",
         "required": [
           "id"
         ],
