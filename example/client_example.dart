@@ -227,8 +227,7 @@ Future<List<OpenSpecDto>> _buildOpenSpecList() async {
     String jsonPath = "$openAPIFolder${Platform.pathSeparator}$openAPIFileName";
     File file = File(jsonPath);
     String jsonString = await file.readAsString();
-    OpenSpecDto openSpecDto =
-        OpenSpecDto(openSpec: jsonString, protocol: Protocol.jsonrpcHttp);
+    OpenSpecDto openSpecDto = OpenSpecDto(openSpec: jsonString, protocol: Protocol.JSONRPCHTTP);
     OpenSpecDtoList.add(openSpecDto);
   }
 
@@ -246,7 +245,7 @@ Future<List<OpenSpecDto>> _buildOpenSpecList() async {
   //   File file = File(jsonPath);
   //   String jsonString = await file.readAsString();
   //   OpenSpecDto openSpecDto =
-  //       OpenSpecDto(openSpec: jsonString, protocol: Protocol.openmodbus);
+  //       OpenSpecDto(openSpec: jsonString, protocol: Protocol.OPENMODBUS);
   //   OpenSpecDtoList.add(openSpecDto);
   // }
 

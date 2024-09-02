@@ -38,7 +38,8 @@ class AgentController {
           detail: "baseUrl: ${capabilityDto.llmConfig.baseUrl}, " +
               "model: ${capabilityDto.llmConfig.model}, " +
               "systemMessageLength: ${capabilityDto.systemPrompt.length}," +
-              "openSpecListLength: ${capabilityDto.openSpecList==null?"null": capabilityDto.openSpecList!.length}"
+              "openSpecListLength: ${capabilityDto.openSpecList == null ?"null": capabilityDto.openSpecList!.length}," +
+              "sessionListLength: ${capabilityDto.sessionList == null ?"null": capabilityDto.sessionList!.length}"
       );
 
       SessionDto sessionDto = await agentService.initChat(capabilityDto, listen);
@@ -142,7 +143,7 @@ class AgentController {
 
   void listen(String sessionId, AgentMessage agentMessage) {
     WebSocketChannel? webSocketChannel = webSocketSessions[sessionId];
-    AgentMessageDto agentMessageDto = AgentMessageDto.fromModel(sessionId, agentMessage);
+    AgentMessageDto agentMessageDto = AgentMessageDto.fromModel(agentMessage);
     logger.log(LogModule.ws, "Send message", detail: jsonEncode(agentMessageDto.toJson()));
     webSocketChannel?.sink.add(jsonEncode(agentMessageDto.toJson()));
   }

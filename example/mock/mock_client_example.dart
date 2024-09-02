@@ -223,7 +223,7 @@ Future<List<OpenSpecDto>> _buildOpenSpecList() async {
     File file = File(jsonPath);
     String jsonString = await file.readAsString();
     OpenSpecDto openSpecDto =
-    OpenSpecDto(openSpec: jsonString, protocol: Protocol.openapi);
+    OpenSpecDto(openSpec: jsonString, protocol: Protocol.OPENAPI);
     OpenSpecDtoList.add(openSpecDto);
   }
 
