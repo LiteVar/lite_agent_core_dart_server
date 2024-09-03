@@ -87,6 +87,14 @@ LLM `AI Agent` multi session HTTP/WebSocket service
                   "protocol": "Support openapi, openmodbus, jsonrpcHttp"
               }
           ],
+          "sessionList": [
+              {
+                  "id": "<Sub Agent sessionId 1>"
+              },
+              {
+                  "id": "<Sub Agent sessionId 2>"
+              }
+          ],
           "timeoutSeconds": 3600
       }
       ```

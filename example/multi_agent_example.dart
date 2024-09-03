@@ -14,8 +14,10 @@ Dio dio = Dio(BaseOptions(
   // headers: {"Authorization": "Bearer <KEY>"}
 ));
 
-
-
+/// [IMPORTANT] Prepare:
+/// 1. HTTP Server, according to `/example/mock/server/mock_http_server`, which server is running.
+/// 2. OneAPI JSON file, which is described the HTTP Server API.
+/// 3. Add LLM baseUrl and apiKey to `.env` file
 Future<void> main() async {
 
   DotEnv env = DotEnv();env.load(['example/.env']);LLMConfigDto llmConfig = LLMConfigDto(baseUrl: env["baseUrl"]!, apiKey: env["apiKey"]!, model: "gpt-4o-mini");

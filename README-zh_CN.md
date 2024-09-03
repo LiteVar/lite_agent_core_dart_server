@@ -87,6 +87,14 @@
                 "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
             }
         ],
+          "sessionList": [
+              {
+                  "id": "<Sub Agent sessionId 1>"
+              },
+              {
+                  "id": "<Sub Agent sessionId 2>"
+              }
+          ],
         "timeoutSeconds": 3600
     }
     ```
