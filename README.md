@@ -59,8 +59,8 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 - Request body：
     - LLM config: baseUrl, apiKey, model
     - System Prompt: Agent character, ToDo/NotToDo description
-    - Tools Description: (Optional) openapi, openrpc, openmodbus Spec. According to third APIs in Spec to set `apiKey` or net
-    - Session List:  (Optional) for multi agents supported. Init other agents, and add their sessionIds in this field. 
+    - Tools Description: (Optional) openapi, openrpc, openmodbus Spec. According to third APIs in Spec to set `apiKey` or not
+    - Session List:  (Optional) for multi agents supported. Init other agents, and add their sessionIds in this field
     - Timeout：3600 seconds in default. When agent stopped, massages context will be clear
   - Sample: 
   ```json
