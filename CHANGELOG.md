@@ -1,3 +1,7 @@
+## 0.4.0
+
+- add multi agent supported
+
 ## 0.3.1
 
 - Add Dockerfile

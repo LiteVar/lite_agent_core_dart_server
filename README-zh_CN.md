@@ -59,45 +59,46 @@
 - 请求参数：
   - 大模型设置：大模型的链接、key、模型名称
   - 预置提示词：角色、能力、目标描述
-  - 能力细节描述：openapi、openmodbus文档描述。其中apiKey根据实际需要可选填写
+  - 能力细节描述：（可选）openapi、openrpc、openmodbus文档描述。其中apiKey根据实际需要可选填写
+  - Session列表：（可选）对多Agent做支持。先初始化其他Agent，获得SessionId后，传入这个字段。
   - 超时时间：默认3600秒，停止交互后，超过时间则清空上下文
-  - 请求样例
-    ```json
-    {
-        "llmConfig": {
-            "baseUrl": "<大模型厂商的api入口，例如：https://api.openai.com/v1>",
-            "apiKey": "<大模型厂商的api的Key，例如：sk-xxxxxxxxxx>",
-            "model": "<厂商支持的大模型名称，例如：gpt-3.5-turbo，下方的temperature、maxTokens、topP可选传入，下方为默认值>",
-            "temperature": 0,
-            "maxTokens": 4096,
-            "topP": 1
+- 请求样例
+  ```json
+  {
+    "llmConfig": {
+      "baseUrl": "<大模型厂商的api入口，例如：https://api.openai.com/v1>",
+      "apiKey": "<大模型厂商的api的Key，例如：sk-xxxxxxxxxx>",
+      "model": "<厂商支持的大模型名称，例如：gpt-3.5-turbo，下方的temperature、maxTokens、topP可选传入，下方为默认值>",
+      "temperature": 0,
+      "maxTokens": 4096,
+      "topP": 1
+    },
+    "systemPrompt": "<预置的系统提示词，例如扮演什么角色，具有什么能力，需要帮助用户解决哪一类的问题>",
+    "openSpecList": [
+      {
+        "openSpec": "<（可选）spec的json描述文本，目前支持的类型是openapi、openmodbus、openrpc>",
+        "apiKey": {
+          "type": "<basic或bearer二选一>",
+          "apiKey": "<第三方服务的apiKey>"
         },
-        "systemPrompt": "<预置的系统提示词，例如扮演什么角色，具有什么能力，需要帮助用户解决哪一类的问题>",
-        "openSpecList": [
-            {
-                "openSpec": "<（可选）spec的json描述文本，目前支持的类型是openapi、openmodbus、openrpc>",
-                "apiKey": {
-                    "type": "<basic或bearer二选一>",
-                    "apiKey": "<第三方服务的apiKey>"
-                },
-                "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
-            },
-            {
-                "openSpec": "<（可选）另一段spec的json描述，可以不同类型混用>",
-                "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
-            }
-        ],
-          "sessionList": [
-              {
-                  "id": "<Sub Agent sessionId 1>"
-              },
-              {
-                  "id": "<Sub Agent sessionId 2>"
-              }
-          ],
-        "timeoutSeconds": 3600
-    }
-    ```
+        "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
+      },
+      {
+        "openSpec": "<（可选）另一段spec的json描述，可以不同类型混用>",
+        "protocol": "目前支持openapi、openmodbus、jsonrpcHttp"
+      }
+    ],
+    "sessionList": [
+      {
+        "id": "<Sub Agent sessionId 1>"
+      },
+      {
+        "id": "<Sub Agent sessionId 2>"
+      }
+    ],
+    "timeoutSeconds": 3600
+  }
+  ```
 
 - 返回：
   - sessionId，用以后续对于该session的消息订阅、stop、clear操作

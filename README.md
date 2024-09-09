@@ -59,45 +59,46 @@ LLM `AI Agent` multi session HTTP/WebSocket service
 - Request body：
     - LLM config: baseUrl, apiKey, model
     - System Prompt: Agent character, ToDo/NotToDo description
-    - Tools Description: openapi、openmodbus Spec. According to third APIs in Spec to set `apiKey` or net
+    - Tools Description: (Optional) openapi, openrpc, openmodbus Spec. According to third APIs in Spec to set `apiKey` or net
+    - Session List:  (Optional) for multi agents supported. Init other agents, and add their sessionIds in this field. 
     - Timeout：3600 seconds in default. When agent stopped, massages context will be clear
-    - Sample: 
-      ```json
-      {
-          "llmConfig": {
-              "baseUrl": "<LLM API baseUrl, e.g. https://api.openai.com/v1>",
-              "apiKey": "<LLM API apiKey, e.g. sk-xxxxxxxxxx>",
-              "model": "<LLM API model name, e.g. gpt-3.5-turbo. And temperature、maxTokens、topP can be changed below >",
-              "temperature": 0,
-              "maxTokens": 4096,
-              "topP": 1
-          },
-          "systemPrompt": "<System Prompt. LLM character, capabilities, need to help user fixed what problems>",
-          "openSpecList": [
-              {
-                  "openSpec": "<(Optional) tool spec json string, support openapi、openmodbus、openrpc>",
-                  "apiKey": {
-                      "type": "<basic or bearer>",
-                      "apiKey": "<Third APIs apiKey>"
-                  },
-                  "protocol": "Support openapi, openmodbus, jsonrpcHttp"
-              },
-              {
-                  "openSpec": "<(Optional) Another spec json string, can be another protocol>",
-                  "protocol": "Support openapi, openmodbus, jsonrpcHttp"
-              }
-          ],
-          "sessionList": [
-              {
-                  "id": "<Sub Agent sessionId 1>"
-              },
-              {
-                  "id": "<Sub Agent sessionId 2>"
-              }
-          ],
-          "timeoutSeconds": 3600
-      }
-      ```
+  - Sample: 
+  ```json
+  {
+    "llmConfig": {
+        "baseUrl": "<LLM API baseUrl, e.g. https://api.openai.com/v1>",
+        "apiKey": "<LLM API apiKey, e.g. sk-xxxxxxxxxx>",
+        "model": "<LLM API model name, e.g. gpt-3.5-turbo. And temperature、maxTokens、topP can be changed below >",
+        "temperature": 0,
+        "maxTokens": 4096,
+        "topP": 1
+    },
+    "systemPrompt": "<System Prompt. LLM character, capabilities, need to help user fixed what problems>",
+    "openSpecList": [
+        {
+            "openSpec": "<(Optional) tool spec json string, support openapi、openmodbus、openrpc>",
+            "apiKey": {
+                "type": "<basic or bearer>",
+                "apiKey": "<Third APIs apiKey>"
+            },
+            "protocol": "Support openapi, openmodbus, jsonrpcHttp"
+        },
+        {
+            "openSpec": "<(Optional) Another spec json string, can be another protocol>",
+            "protocol": "Support openapi, openmodbus, jsonrpcHttp"
+        }
+    ],
+    "sessionList": [
+        {
+            "id": "<Sub Agent sessionId 1>"
+        },
+        {
+            "id": "<Sub Agent sessionId 2>"
+        }
+    ],
+    "timeoutSeconds": 3600
+  }
+  ```
 
 - Response body：
     - sessionId, will be used as session websocket subscribe, stop and clear operations.

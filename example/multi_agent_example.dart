@@ -33,11 +33,11 @@ Future<void> main() async {
     return;
   }
 
-    CapabilityDto capabilityDto = CapabilityDto(llmConfig: llmConfig, systemPrompt: systemPrompt,
-        sessionList: [sessionDto1, sessionDto2]
-    );
+  CapabilityDto capabilityDto = CapabilityDto(llmConfig: llmConfig, systemPrompt: systemPrompt,
+      sessionList: [sessionDto1, sessionDto2]
+  );
 
-    SessionDto? sessionDto = await initChat(capabilityDto);
+  SessionDto? sessionDto = await initChat(capabilityDto);
 
   if (sessionDto != null) {
     print("[sessionDto] " + sessionDto.toJson().toString());
